@@ -42,8 +42,9 @@
             </div>
             <div>
                 <h1 class="text-lg font-bold tracking-tight uppercase leading-none">Rol de Despachadores</h1>
-                <div id="status-indicator" class="text-[10px] text-orange-500 font-bold flex items-center gap-1 mt-1">
-                    <i class="fa-solid fa-circle-notch fa-spin"></i> Conectando...
+                <!-- Indicador de estado mejorado para depuración -->
+                <div id="status-indicator" class="text-[10px] text-orange-500 font-bold flex items-center gap-1 mt-1 cursor-help" title="Estado de la conexión">
+                    <i class="fa-solid fa-circle-notch fa-spin"></i> Inicializando...
                 </div>
             </div>
         </div>
@@ -88,14 +89,15 @@
                     <div id="roleTableBody" class="overflow-y-auto flex-1 divide-y divide-slate-100">
                         <div class="p-8 text-center text-slate-400">
                             <i class="fa-solid fa-cloud-arrow-down text-3xl mb-2 animate-bounce"></i>
-                            <p>Sincronizando datos...</p>
+                            <p id="loading-text">Sincronizando datos...</p>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- VISTA: Opciones -->
-            <div id="view-options" class="hidden fade-in h-full">
+            <!-- CORRECCIÓN AQUÍ: Se cambió id="view-options" a id="view-opciones" para coincidir con el JS -->
+            <div id="view-opciones" class="hidden fade-in h-full">
                 <div class="max-w-lg mx-auto space-y-6">
                     <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
                         <h3 class="font-bold text-slate-800 mb-4 flex items-center gap-2"><i class="fa-solid fa-calendar text-blue-600"></i> Configuración</h3>
@@ -144,9 +146,6 @@
         // ==========================================
         //  CONFIGURACIÓN PARA GITHUB / LOCAL
         // ==========================================
-        // Si vas a usar esto en GitHub Pages, REEMPLAZA 'undefined'
-        // con tu objeto de configuración de Firebase real.
-        // Ejemplo: const manualConfig = { apiKey: "...", authDomain: "...", ... };
         
         const manualConfig = {
           apiKey: "AIzaSyArRVSxwFF5-9D48VS-AZsb6_e2oIBUESk",
@@ -164,57 +163,72 @@
         let COLLECTION_PREFIX = '';
         let appId = 'default';
 
-        // Detectar Entorno (Preview vs Producción/GitHub)
+        // Detectar Entorno
         if (typeof __firebase_config !== 'undefined') {
-            // Entorno Preview (Aquí mismo)
             app = initializeApp(JSON.parse(__firebase_config));
             appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
             COLLECTION_PREFIX = `artifacts/${appId}/public/data/`;
         } else if (manualConfig) {
-            // Entorno GitHub Pages (Con tu config)
             app = initializeApp(manualConfig);
-            COLLECTION_PREFIX = ''; // Usar colecciones raíz en tu proyecto propio
-        } else {
-            // Sin configuración
-            console.warn("No se detectó configuración de Firebase.");
-            document.getElementById('status-indicator').innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Sin Configuración DB';
+            COLLECTION_PREFIX = ''; 
         }
+
+        const indicator = document.getElementById('status-indicator');
+
+        // Manejo de errores global
+        window.onerror = function(msg, url, line) {
+            indicator.innerHTML = `<i class="fa-solid fa-bug text-red-500"></i> Error de Script`;
+            console.error("Global Error:", msg);
+            return false;
+        };
 
         if (app) {
             db = getFirestore(app);
             auth = getAuth(app);
             
-            // Autenticación
+            // Logica de Auth con manejo de errores
             const initAuth = async () => {
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
+                try {
+                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                        await signInWithCustomToken(auth, __initial_auth_token);
+                    } else {
+                        await signInAnonymously(auth);
+                    }
+                } catch (error) {
+                    console.error("Auth Error:", error);
+                    let msg = "Error de Conexión";
+                    if(error.code === 'auth/operation-not-allowed') msg = "Auth Anónimo Apagado (Consola)";
+                    else if(error.code === 'auth/invalid-api-key') msg = "API Key Inválida";
+                    else if(error.code === 'auth/network-request-failed') msg = "Sin Internet";
+                    
+                    indicator.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-red-500"></i> ${msg}`;
+                    document.getElementById('loading-text').innerText = `Error: ${msg}. Revisa la consola (F12).`;
                 }
             };
             initAuth();
 
             onAuthStateChanged(auth, (user) => {
-                const ind = document.getElementById('status-indicator');
                 if (user) {
-                    ind.innerHTML = '<i class="fa-solid fa-wifi text-green-500"></i> En Línea';
-                    ind.classList.replace('text-orange-500', 'text-green-600');
+                    indicator.innerHTML = '<i class="fa-solid fa-wifi text-green-500"></i> En Línea';
+                    indicator.classList.replace('text-orange-500', 'text-green-600');
                     startListeners();
                 } else {
-                    ind.innerHTML = '<i class="fa-solid fa-ban text-red-500"></i> Desconectado';
+                    // Si no hay user y no hubo error arriba, probablemente inicializando
                 }
             });
+        } else {
+            indicator.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Sin Config';
         }
 
-        // --- ESTADO LOCAL (Sincronizado) ---
+        // --- ESTADO LOCAL ---
         window.dispatchers = [];
-        window.roles = {}; // Estructura DB: { date: { 0: id, 1: id } }
+        window.roles = {}; 
         window.currentRoleDates = [];
-        window.roleStartDateString = '2026-01-05'; // Default
+        window.roleStartDateString = '2026-01-05'; 
 
-        // --- LISTENERS (Tiempo Real) ---
+        // --- LISTENERS ---
         function startListeners() {
-            // 1. Despachadores
+            // Despachadores
             const dispCol = collection(db, COLLECTION_PREFIX + 'dispatchers');
             onSnapshot(dispCol, (snapshot) => {
                 window.dispatchers = [];
@@ -222,11 +236,16 @@
                     window.dispatchers.push({ id: doc.id, ...doc.data() });
                 });
                 renderDispatchers();
-                // Si la tabla de roles está abierta, redibujarla para actualizar nombres
                 if(!document.getElementById('view-roles').classList.contains('hidden')) renderRoleTable();
+            }, (error) => {
+                console.error("Firestore Error (Dispatchers):", error);
+                if(error.code === 'permission-denied') {
+                    indicator.innerHTML = '<i class="fa-solid fa-lock text-red-500"></i> Permiso Denegado';
+                    alert("Error: Permiso denegado. Revisa las reglas de Firestore.");
+                }
             });
 
-            // 2. Roles
+            // Roles
             const rolesCol = collection(db, COLLECTION_PREFIX + 'roles');
             onSnapshot(rolesCol, (snapshot) => {
                 window.roles = {};
@@ -236,7 +255,7 @@
                 renderRoleTable();
             });
 
-            // 3. Configuración (Fecha Inicio)
+            // Config
             const configRef = doc(db, COLLECTION_PREFIX + 'config', 'main');
             onSnapshot(configRef, (docSnap) => {
                 if (docSnap.exists()) {
@@ -247,8 +266,7 @@
                         recalcDates();
                     }
                 } else {
-                    // Crear default si no existe
-                    setDoc(configRef, { startDate: '2026-01-05' });
+                    setDoc(configRef, { startDate: '2026-01-05' }).catch(e => console.log("Init config write pending auth"));
                 }
             });
         }
@@ -271,8 +289,6 @@
         window.deleteDispatcher = function(id) {
             showConfirm("¿Eliminar?", "Se borrará permanentemente.", async () => {
                 await deleteDoc(doc(db, COLLECTION_PREFIX + 'dispatchers', id));
-                // Opcional: Limpiar roles donde aparezca este ID (complejo en NoSQL, se deja visualmente como vacante o error)
-                // Para ser limpio, deberíamos buscar en todos los roles y borrarlo, pero por simplicidad omitimos ese query masivo.
             });
         }
 
@@ -310,9 +326,6 @@
 
         window.assignDispatcher = async function(id) {
             const roleRef = doc(db, COLLECTION_PREFIX + 'roles', selectedDate);
-            // Firestore update de campo anidado o mapa completo
-            // Necesitamos leer primero o usar set con merge
-            // Usaremos notación de punto para actualizar solo el slot
             const updateData = {};
             updateData[selectedSlot] = id;
             await setDoc(roleRef, updateData, { merge: true });
@@ -320,48 +333,34 @@
         }
 
         window.clearRoleSlot = async function(d, s) {
-            // Firestore delete field
-            // Se requiere importar deleteField pero podemos poner null o string vacio
-            // Mejor poner null para "vacante"
             const roleRef = doc(db, COLLECTION_PREFIX + 'roles', d);
             const updateData = {};
-            updateData[s] = null; // O deleteField() si importado
-            await updateDoc(roleRef, updateData).catch(async (e) => {
-               // Si el doc no existe da error, pero si estamos borrando algo que no existe visualmente no importa
-            });
-            // Limpiar selección local también
+            updateData[s] = null; 
+            await updateDoc(roleRef, updateData).catch(async (e) => {});
             window.selectedSlots = window.selectedSlots.filter(sl => !(sl.date === d && sl.slot === s));
             renderRoleTable();
         }
 
-        // Movimientos complejos (Swap/Group)
         window.performMove = async function(fd, fs, td, ts) {
-            // Borrar origen
             await updateDoc(doc(db, COLLECTION_PREFIX + 'roles', fd), { [fs]: null });
-            // Escribir destino
             await setDoc(doc(db, COLLECTION_PREFIX + 'roles', td), { [ts]: draggedData.id }, { merge: true });
             draggedData = null;
         }
 
         window.executeGroupMove = async function(moves) {
-            // Ejecutar en lote (batch) sería ideal, pero por simplicidad haremos promesas paralelas
             const promises = [];
-            
-            // 1. Limpiar orígenes
             for (const m of moves) {
                 const ref = doc(db, COLLECTION_PREFIX + 'roles', m.oldDate);
                 promises.push(updateDoc(ref, { [m.oldSlot]: null }));
             }
             await Promise.all(promises);
 
-            // 2. Escribir destinos
             const writePromises = [];
             for (const m of moves) {
                 const ref = doc(db, COLLECTION_PREFIX + 'roles', m.newDate);
                 writePromises.push(setDoc(ref, { [m.newSlot]: m.id }, { merge: true }));
             }
             await Promise.all(writePromises);
-            
             window.selectedSlots = [];
             renderRoleTable();
         }
@@ -397,22 +396,37 @@
         window.switchTab = (tab) => {
             const views = ['despachadores', 'roles', 'opciones'];
             views.forEach(v => {
-                document.getElementById('view-'+v).classList.add('hidden');
-                const b = document.getElementById('tab-'+v);
-                b.classList.replace('border-slate-800','border-transparent');
-                b.classList.replace('text-slate-800','text-slate-400');
+                const viewEl = document.getElementById('view-'+v);
+                const tabEl = document.getElementById('tab-'+v);
+                if (viewEl) viewEl.classList.add('hidden');
+                if (tabEl) {
+                    tabEl.classList.replace('border-slate-800','border-transparent');
+                    tabEl.classList.replace('text-slate-800','text-slate-400');
+                }
             });
-            document.getElementById('view-'+tab).classList.remove('hidden');
-            const b = document.getElementById('tab-'+tab);
-            b.classList.replace('border-transparent','border-slate-800');
-            b.classList.replace('text-slate-400','text-slate-800');
+            const selectedView = document.getElementById('view-'+tab);
+            const selectedTab = document.getElementById('tab-'+tab);
+            
+            if (selectedView) selectedView.classList.remove('hidden');
+            if (selectedTab) {
+                selectedTab.classList.replace('border-transparent','border-slate-800');
+                selectedTab.classList.replace('text-slate-400','text-slate-800');
+            }
             
             const btnNew = document.getElementById('btnNewDispatcher');
-            if(tab === 'despachadores') { btnNew.classList.remove('hidden'); btnNew.classList.add('flex'); }
-            else { btnNew.classList.add('hidden'); btnNew.classList.remove('flex'); }
+            if(tab === 'despachadores') { 
+                if (btnNew) {
+                    btnNew.classList.remove('hidden'); 
+                    btnNew.classList.add('flex'); 
+                }
+            } else { 
+                if (btnNew) {
+                    btnNew.classList.add('hidden'); 
+                    btnNew.classList.remove('flex'); 
+                }
+            }
             
             if(tab === 'roles') {
-                // Ensure dates are calc
                 recalcDates();
                 renderRoleTable();
             }
@@ -688,18 +702,15 @@
             } else {
                 const o = draggedData; const t = swapTargetData;
                 if(action === 'overwrite') {
-                    // Borrar target y origin, poner origin en target
                     await updateDoc(doc(db, COLLECTION_PREFIX + 'roles', t.date), { [t.slot]: null }); // Optional clean
                     await updateDoc(doc(db, COLLECTION_PREFIX + 'roles', o.originDate), { [o.originSlot]: null });
                     await setDoc(doc(db, COLLECTION_PREFIX + 'roles', t.date), { [t.slot]: o.id }, { merge: true });
                 } else if(action === 'swap') {
-                    // Validar swap cruzado
                     const tId = window.roles[t.date][t.slot];
                     const checkX = checkRules(t.date, t.slot, o.id, o.originDate, o.originSlot);
                     const checkZ = checkRules(o.originDate, o.originSlot, tId, t.date, t.slot);
                     if(!checkX.valid || !checkZ.valid) { closeSwapModal(); return showAlert("Swap inválido por reglas."); }
                     
-                    // Ejecutar update paralelo
                     const p1 = setDoc(doc(db, COLLECTION_PREFIX + 'roles', o.originDate), { [o.originSlot]: tId }, { merge: true });
                     const p2 = setDoc(doc(db, COLLECTION_PREFIX + 'roles', t.date), { [t.slot]: o.id }, { merge: true });
                     await Promise.all([p1, p2]);
