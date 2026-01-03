@@ -96,8 +96,10 @@
         </div>
     </div>
 
-    <main class="flex-1 overflow-y-auto relative bg-gray-100 scroll-smooth">
-        <div class="max-w-5xl mx-auto h-full p-3 md:p-6 pb-32">
+    <!-- CAMBIO: Altura flexible con min-h-0 para permitir scroll interno sin desborde -->
+    <main class="flex-1 overflow-hidden relative bg-gray-100 flex flex-col min-h-0">
+        <!-- Contenedor principal con scroll y padding -->
+        <div class="max-w-5xl mx-auto w-full h-full p-3 md:p-6 pb-20 overflow-y-auto scroll-smooth">
             <div id="view-despachadores" class="fade-in">
                 <div class="flex flex-col gap-3 mb-4">
                     <div class="flex justify-between items-end px-1"><p class="text-[10px] md:text-xs font-black text-gray-400 uppercase tracking-wider">DIRECTORIO ACTIVO</p><span id="counter" class="text-[10px] md:text-xs bg-red-100 border border-red-200 px-2 py-0.5 rounded-full text-red-800 font-bold shadow-sm">0</span></div>
@@ -106,13 +108,16 @@
                 <div id="listaDespachadores" class="space-y-3"></div>
             </div>
 
-            <div id="view-roles" class="hidden fade-in h-full flex flex-col">
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex-1 flex flex-col">
-                    <div class="hidden md:grid grid-cols-12 bg-gray-800 border-b border-gray-200 text-xs font-bold text-white uppercase py-3 px-4">
+            <!-- CAMBIO: Contenedor de roles con altura completa para llenar espacio -->
+            <div id="view-roles" class="hidden fade-in flex flex-col h-full">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col flex-1 h-full">
+                    <div class="hidden md:grid grid-cols-12 bg-gray-800 border-b border-gray-200 text-xs font-bold text-white uppercase py-3 px-4 shrink-0">
                         <div class="col-span-3">Fecha</div><div class="col-span-4">Despachador #1</div><div class="col-span-4">Despachador #2</div><div class="col-span-1 text-right no-print"></div> 
                     </div>
-                    <div id="selection-bar" class="hidden bg-yellow-100 border-b border-yellow-300 p-2 flex justify-between items-center text-xs text-yellow-800 px-4 font-bold shadow-inner"><span><i class="fa-solid fa-check-double mr-1"></i> Selección Múltiple Activa</span><button onclick="clearSelection()" class="underline hover:text-black">Cancelar</button></div>
-                    <div id="roleTableBody" class="overflow-y-auto flex-1 md:divide-y md:divide-gray-100 bg-gray-50 md:bg-white">
+                    <div id="selection-bar" class="hidden bg-yellow-100 border-b border-yellow-300 p-2 flex justify-between items-center text-xs text-yellow-800 px-4 font-bold shadow-inner shrink-0"><span><i class="fa-solid fa-check-double mr-1"></i> Selección Múltiple Activa</span><button onclick="clearSelection()" class="underline hover:text-black">Cancelar</button></div>
+                    
+                    <!-- CAMBIO: Scroll solo en el cuerpo de la tabla -->
+                    <div id="roleTableBody" class="overflow-y-auto flex-1 md:divide-y md:divide-gray-100 bg-gray-50 md:bg-white p-1 md:p-0">
                         <div class="p-8 text-center text-gray-400 mt-10"><i class="fa-solid fa-cloud-arrow-down text-3xl mb-2 animate-bounce"></i><p id="loading-text" class="text-xs">Sincronizando datos...</p></div>
                     </div>
                 </div>
@@ -288,10 +293,13 @@
             const tbody = document.getElementById('pdf-table-body');
             tbody.innerHTML = '';
             
-            // Set date range based on actual calculated dates
-            const start = new Date(window.currentRoleDates[0]);
-            // Calculate end date based on last element, which is the last working day (Saturday)
-            const end = new Date(window.currentRoleDates[window.currentRoleDates.length-1]);
+            // Fix timezone issue by parsing with time or splitting
+            const startStrRaw = window.currentRoleDates[0];
+            const endStrRaw = window.currentRoleDates[window.currentRoleDates.length-1];
+            
+            // Create dates treating input as local noon to be safe
+            const start = new Date(startStrRaw + 'T12:00:00');
+            const end = new Date(endStrRaw + 'T12:00:00');
             
             const options = { year: '2-digit', month: 'long', day: 'numeric' };
             const startStr = start.toLocaleDateString('es-ES', options);
