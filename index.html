@@ -842,7 +842,11 @@
                     <div class="flex items-center gap-3 overflow-hidden">
                         <div class="w-10 h-10 ${iconBg} rounded-full flex-shrink-0 flex items-center justify-center text-sm font-bold border border-gray-100"><i class="fa-solid fa-user"></i></div>
                         <div class="min-w-0">
-                            <h4 class="${d.active?'text-gray-800':'text-red-800'} font-black text-sm truncate leading-tight">${d.name} ${d.lastname} (${d.area})</h4>
+                                                        <h4 class="${d.active?'text-gray-800':'text-red-800'} font-black text-sm leading-tight">
+                                <span class="block md:inline">${d.name}</span>
+                                <span class="block md:inline md:ml-1">${d.lastname}</span>
+                                <span class="block md:inline md:ml-1">(${d.area})</span>
+                            </h4>
                         </div>
                     </div>
                     <div class="flex items-center gap-2 flex-shrink-0">${statusBtn}<div class="relative"><button onclick="toggleMenu(event, 'menu-${d.id}')" class="w-8 h-8 rounded-full bg-gray-50 text-gray-400 active:bg-gray-200 flex items-center justify-center"><i class="fa-solid fa-ellipsis-vertical"></i></button><div id="menu-${d.id}" class="dropdown-menu hidden absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-2xl border border-gray-100 z-10 overflow-hidden"><button onclick="openEditModal('${d.id}')" class="w-full text-left px-4 py-3 text-sm text-gray-700 active:bg-gray-50 flex items-center gap-3 border-b border-gray-50 font-bold"><i class="fa-solid fa-pen text-blue-600"></i> Editar</button><button onclick="deleteDispatcher('${d.id}')" class="w-full text-left px-4 py-3 text-sm text-red-600 active:bg-red-50 flex items-center gap-3 font-bold"><i class="fa-solid fa-trash"></i> Eliminar</button></div></div></div>`;
@@ -897,7 +901,14 @@
             const isSel = window.selectedSlots.some(s => s.date === date && s.slot === slot);
             const cl = isSel ? 'card-selected' : 'border-gray-200 bg-white';
             // Formato: "NOMBRE APELLIDO (ZONA)" en una sola fila, centrado
-            return `<div class="w-full h-full p-1 md:p-2 rounded-lg border ${cl} flex flex-col justify-center items-center relative cursor-grab active:cursor-grabbing shadow-sm" draggable="true" ondragstart="drag(event, '${date}', ${slot}, '${dispatcherId}')"><p class="text-xs font-black text-gray-800 truncate leading-tight text-center">${disp.name} ${disp.lastname} (${disp.area})</p><button onclick="openRoleOptions('${date}', ${slot})" class="absolute top-1 left-1 w-8 h-8 flex items-center justify-center text-gray-300 active:text-gray-600 rounded-full active:bg-gray-100"><i class="fa-solid fa-ellipsis-vertical text-sm"></i></button></div>`;
+            return `<div class="w-full h-full p-1 md:p-2 rounded-lg border ${cl} flex flex-col justify-center items-center relative cursor-grab active:cursor-grabbing shadow-sm" draggable="true" ondragstart="drag(event, '${date}', ${slot}, '${dispatcherId}')">
+                <p class="text-xs font-black text-gray-800 leading-tight text-center">
+                    <span class="block md:inline">${disp.name}</span>
+                    <span class="block md:inline md:ml-1">${disp.lastname}</span>
+                    <span class="block md:inline md:ml-1">(${disp.area})</span>
+                </p>
+                <button onclick="openRoleOptions('${date}', ${slot})" class="absolute top-1 left-1 w-8 h-8 flex items-center justify-center text-gray-300 active:text-gray-600 rounded-full active:bg-gray-100"><i class="fa-solid fa-ellipsis-vertical text-sm"></i></button>
+            </div>`;
         }
         function getWeekIndex(dateStr) { const idx = window.currentRoleDates.indexOf(dateStr); return idx === -1 ? -1 : (idx < 6 ? 0 : 1); }
         function checkRules(tDate, tSlot, dId, xDate=null, xSlot=null) {
