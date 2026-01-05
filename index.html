@@ -12,7 +12,113 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     
     <style>
-        body { -webkit-tap-highlight-color: transparent; user-select: none; }
+        body { 
+            -webkit-tap-highlight-color: transparent; 
+            user-select: none; 
+            position: relative;
+            background-color: rgba(243, 244, 246, 0.3) !important; /* Transparente para ver el logo */
+        }
+        
+        /* Asegurar que el logo esté visible */
+        html {
+            background-color: transparent !important;
+        }
+        
+        /* Logo de fondo grande y semi-transparente - TAMAÑO COMPLETO DE LA PÁGINA */
+        #bg-logo {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            min-width: 100vw !important;
+            min-height: 100vh !important;
+            pointer-events: none;
+            z-index: 0 !important; /* Detrás del contenido pero visible */
+            opacity: 0.6 !important; /* AUMENTADA para mejor visibilidad - Cambia este valor (0.1 a 1.0) para ajustar */
+            overflow: visible !important;
+            display: block !important;
+            visibility: visible !important;
+            background: transparent !important;
+        }
+        #bg-logo svg {
+            width: 100vw !important;
+            height: 100vh !important;
+            min-width: 100vw !important;
+            min-height: 100vh !important;
+            display: block !important;
+            visibility: visible !important;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        #bg-logo path {
+            fill: #8c8c8c !important; /* Color gris del logo */
+            fill-opacity: 1 !important;
+        }
+        
+        /* Hacer TODOS los contenedores y tarjetas transparentes para ver el logo de fondo */
+        /* EXCEPCIÓN: Botones rojos, negros, verdes y texto/números se mantienen opacos */
+        
+        /* Transparencia para contenedores principales */
+        .bg-white {
+            background-color: rgba(255, 255, 255, 0.6) !important; /* Transparente para ver el logo */
+        }
+        .bg-gray-50 {
+            background-color: rgba(249, 250, 251, 0.6) !important; /* Transparente */
+        }
+        .bg-gray-100 {
+            background-color: rgba(243, 244, 246, 0.3) !important; /* Muy transparente para el main */
+        }
+        
+        /* Mantener botones con colores sólidos (NO transparentes) */
+        button.bg-red-600, button.bg-red-700, 
+        button.bg-gray-900, button.bg-black,
+        button.bg-green-600, button.bg-green-700,
+        button.bg-blue-600, button.bg-blue-700,
+        .bg-red-100, .bg-red-50, .bg-green-100, .bg-green-50,
+        .bg-yellow-100, .bg-yellow-400,
+        .bg-orange-500 {
+            background-color: inherit !important; /* Mantener colores sólidos de Tailwind */
+        }
+        
+        /* Hacer transparentes las tarjetas de opciones y contenedores */
+        #view-opciones .bg-white,
+        #view-despachadores .bg-white,
+        #view-roles .bg-white {
+            background-color: rgba(255, 255, 255, 0.6) !important;
+        }
+        
+        /* Hacer transparentes las tarjetas de la lista de despachadores */
+        #listaDespachadores > div {
+            background-color: rgba(255, 255, 255, 0.6) !important;
+        }
+        
+        /* Mantener texto y números opacos */
+        p, h1, h2, h3, h4, span, div[class*="text"], 
+        input, textarea, label, button {
+            color: inherit !important; /* Mantener colores de texto */
+        }
+        
+        /* Asegurar que el contenido esté por encima del logo */
+        header {
+            position: relative;
+            z-index: 10;
+        }
+        main {
+            position: relative;
+            z-index: 1;
+        }
+        #tab-nav {
+            position: relative;
+            z-index: 10;
+        }
+        
+        /* Asegurar que el logo esté detrás de todo */
+        #bg-logo {
+            z-index: 0 !important;
+        }
+
         input, textarea { user-select: text; }
         .fade-in { animation: fadeIn 0.3s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
@@ -21,64 +127,111 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
-        .card-selected { border: 2px solid #eab308 !important; background-color: #fefce8 !important; } 
-        .droppable-hover { background-color: #fef2f2; border-color: #ef4444; border-style: dashed; }
+        .card-selected { border: 2px solid #eab308 !important; background-color: rgba(254, 252, 232, 0.7) !important; } 
+        .droppable-hover { background-color: rgba(254, 242, 242, 0.7); border-color: #ef4444; border-style: dashed; }
+
+        /* Filas alternas en pantalla */
+        .zebra-row:nth-child(even) { background-color: rgba(249, 250, 251, 0.7) !important; } 
+        .zebra-row:nth-child(odd) { background-color: rgba(255, 255, 255, 0.7) !important; }
 
         /* --- ESTILOS COMPACTOS PARA REPORTE (PDF E IMPRESIÓN) --- */
+        /* NOTA: Para cambiar los márgenes laterales, modifica el valor 'margin' en #printable-content */
         #printable-content {
             background: white;
-            padding: 15px 30px; 
+            padding: 20px 30px; /* NOTA: Aumenta el segundo valor (30px) para márgenes laterales más grandes */
             font-family: sans-serif;
             color: #000;
-            width: 100%;
-            max-width: 800px;
-            margin: 0 auto;
+            width: fit-content;
+            max-width: 90%;
+            margin: 0 auto; /* Centrado horizontal */
         }
         .pdf-header {
-            text-align: center;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             border-bottom: 2px solid #dc2626;
             padding-bottom: 5px;
             margin-bottom: 10px;
         }
+        .pdf-header h1 {
+            margin: 0;
+        }
+        .pdf-header p {
+            margin: 0;
+        }
         .pdf-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 10px; /* Letra un poco más chica para compactar */
+            font-size: 14px; /* NOTA: Cambia este valor para ajustar el tamaño de fuente de la tabla */
         }
         .pdf-table th {
             background-color: #dc2626;
             color: white;
-            padding: 5px 2px;
+            padding: 8px 4px;
             text-transform: uppercase;
             border: 1px solid #991b1b;
             font-weight: bold;
             text-align: center;
+            font-size: 16px; /* NOTA: Cambia este valor para ajustar el tamaño de fuente del encabezado */
         }
         .pdf-table td {
             border: 1px solid #ccc;
-            padding: 3px 2px; /* Menos padding vertical */
+            padding: 8px 10px; 
             vertical-align: middle;
-            text-align: center;
-            /* Se eliminó height fija para evitar espacios vacíos */
+            height: 45px; 
+            font-size: 15px; /* NOTA: Cambia este valor para ajustar el tamaño de fuente de los datos */
+            font-weight: 600; /* NOTA: Cambia este valor (400-900) para hacer el texto más/menos llamativo */
         }
-        .pdf-vacante { color: #ccc; font-style: italic; }
+        
+        /* ALINEACIONES ESPECÍFICAS PDF */
+        .pdf-col-date { text-align: center; font-weight: bold; width: 20%; }
+        .pdf-col-d1 { text-align: center; width: 40%; } /* Despachador 1 centrado */
+        .pdf-col-d2 { text-align: center; width: 40%; }  /* Despachador 2 centrado */
+
+        /* Estilo de Texto PDF */
+        .pdf-name { font-size: 12px; font-weight: 800; color: #000; text-transform: uppercase; }
+        .pdf-zone { font-size: 10px; color: #555; margin-left: 5px; font-weight: normal; }
+
+        /* Filas alternas en PDF e Impresión (blanco y gris) */
+        .pdf-row-even { background-color: #e5e7eb !important; } 
+        .pdf-row-odd { background-color: #ffffff !important; }
+
+        .pdf-vacante { color: #ccc; font-style: italic; text-align: center; display: block; }
 
         @media print {
             body * { visibility: hidden; }
             #pdf-container, #pdf-container * { visibility: visible; }
             #pdf-container { position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 0; display: block !important; }
-            #printable-content { width: 100%; max-width: none; padding: 5mm; }
+            /* NOTA: Para cambiar los márgenes laterales en impresión, modifica el segundo valor de padding */
+            #printable-content { width: fit-content; max-width: 90%; padding: 20px 30px; margin: 0 auto; }
             .modal, header, nav, main { display: none !important; }
+            @page { margin: 0.3in; size: letter landscape; }
+            /* Asegurar que las filas alternadas se vean en impresión */
+            .pdf-row-even { background-color: #e5e7eb !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .pdf-row-odd { background-color: #ffffff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .pdf-table tr[style*="background-color"] { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
         }
     </style>
 </head>
-<body class="bg-gray-100 text-black font-sans h-[100dvh] flex flex-col overflow-hidden text-sm md:text-base">
+<body class="bg-gray-100 text-black font-sans h-[100dvh] flex flex-col overflow-hidden text-sm md:text-base" onclick="handleBodyClick(event)">
+
+    <!-- Logo de fondo -->
+    <!-- 
+        ============================================
+        AQUÍ PUEDES PEGAR TU SVG PARA EL LOGO DE FONDO
+        El código SVG se inserta dinámicamente en el script al final del archivo
+        Busca la función que crea el logo de fondo (línea ~923-938)
+        Reemplaza el atributo 'd' del path con tu código SVG
+        ============================================
+    -->
+    <div id="bg-logo"></div>
 
     <!-- Encabezado -->
-    <header class="bg-white border-b-4 border-red-600 px-4 py-3 flex justify-between items-center shrink-0 z-20 shadow-md">
+    <header class="bg-white border-b-4 border-red-600 px-4 py-3 flex justify-between items-center shrink-0 z-20 shadow-md" style="background-color: rgba(255, 255, 255, 0.7) !important;">
         <div class="flex items-center gap-3 overflow-hidden">
-            <div class="w-10 h-10 flex-shrink-0 bg-red-700 text-yellow-400 rounded-lg flex items-center justify-center shadow-sm border-2 border-red-800 p-1">
-                <svg width="100%" height="100%" viewBox="0 0 79.375 79.375" version="1.1" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg"><g id="layer1"><path style="fill:currentColor;fill-opacity:1;stroke-width:0.845014" d="m 48.861837,77.39607 c -0.166327,-0.03065 -0.45581,-0.198706 -0.956381,-0.555222 -0.394821,-0.281197 -0.793857,-0.54503 -0.886746,-0.586295 -0.09289,-0.04126 -0.287464,-0.139474 -0.432385,-0.218244 -1.219871,-0.663039 -2.911845,-1.012771 -4.646357,-0.960404 -0.529571,0.01599 -0.658314,0.04608 -7.682768,1.795976 -7.923728,1.973912 -7.707566,1.929121 -8.909632,1.84623 -0.854966,-0.05895 -1.951438,-0.304261 -2.630921,-0.588595 -2.049684,-0.857703 -3.67708,-2.438225 -4.552633,-4.421497 -0.26187,-0.59318 -0.326171,-0.844678 -7.013314,-27.430917 L 4.4016809,19.444854 4.462104,19.176378 c 0.070088,-0.311421 0.2669046,-0.551707 0.555819,-0.67858 0.2731917,-0.119968 0.5899006,-0.04755 1.1448914,0.261789 1.3422438,0.748135 2.8747864,1.306415 4.4135636,1.607789 1.821828,0.35681 3.157855,0.42641 5.013165,0.261158 l 0.945564,-0.08422 8.065256,-1.998028 8.065256,-1.998026 -1.221421,1.172109 c -0.671781,0.64466 -1.304439,1.233852 -1.405905,1.309316 -0.166335,0.123708 -0.809286,0.292097 -6.535733,1.71171 -6.674008,1.654517 -6.685843,1.65708 -8.259461,1.788074 C 13.593007,22.666827 11.67815,22.518023 9.7909818,22.105788 9.1172922,21.958626 7.6702013,21.515114 7.0644037,21.270132 l -0.3007075,-0.121604 0.8654135,3.440908 c 0.4759774,1.8925 1.2816686,5.121143 1.790425,7.174761 0.6765573,2.730953 0.9411213,3.729799 0.9849873,3.71876 0.03299,-0.0083 0.244399,-0.185184 0.469806,-0.393076 0.225406,-0.207893 1.184844,-1.061137 2.132083,-1.896101 2.868326,-2.528343 2.841701,-2.508559 3.123916,-2.321385 0.264875,0.175672 0.309322,0.273963 0.556899,1.231522 0.151507,0.585993 0.26353,0.936338 0.296723,0.92799 0.02934,-0.0074 0.716465,-0.650107 1.526966,-1.428287 0.8105,-0.77818 1.78335,-1.709653 2.161885,-2.069939 0.378536,-0.360285 1.574598,-1.506008 2.657918,-2.546051 2.986123,-2.866834 6.1931,-5.939031 6.988405,-6.694704 0.391283,-0.371783 0.964736,-0.923221 1.274341,-1.225417 0.309606,-0.302195 0.835842,-0.804403 1.169415,-1.116019 0.333572,-0.311614 0.956088,-0.906272 1.383368,-1.321462 0.818741,-0.795573 1.196353,-1.15771 4.215062,-4.042327 1.03387,-0.987944 2.209098,-2.114758 2.61162,-2.50403 0.402522,-0.389273 1.021267,-0.9815198 1.37499,-1.3161069 C 42.701643,8.432978 43.402964,7.7620638 43.90641,7.2766444 44.409858,6.791225 44.996833,6.2252785 45.210801,6.0189869 45.42477,5.8126954 45.730805,5.5293072 45.890883,5.3892359 46.149141,5.1632531 46.180042,5.1123692 46.165158,4.9375758 46.074211,3.8694146 46.432809,2.8805806 47.148306,2.2265538 47.666452,1.7529234 47.966194,1.6390234 50.120371,1.097191 l 1.868017,-0.46985528 0.245819,0.13279268 0.245818,0.13279258 0.651425,2.52478452 c 0.44279,1.7161602 0.644177,2.5739764 0.628795,2.6783762 -0.02996,0.2032946 -0.351711,0.5432145 -0.564964,0.5968532 l -0.169847,0.042717 0.641983,1.0185263 c 0.353093,0.5601878 0.993053,1.5827759 1.422137,2.2724168 1.596816,2.566471 2.457373,3.935831 6.489482,10.326372 l 1.294062,2.050976 0.434257,-0.125691 0.434257,-0.12569 -1.799174,-7.210362 c -0.989547,-3.965699 -1.810179,-7.2075929 -1.82363,-7.2042092 -0.01345,0.0034 -0.198057,0.2108999 -0.410239,0.4611491 -0.786098,0.9271356 -1.836334,1.9078281 -2.670068,2.4932701 l -0.202212,0.141991 -0.09712,-0.158426 C 56.15286,9.719605 55.936185,9.339254 55.943432,9.2791467 55.948161,9.2398248 56.300121,8.9095 56.725538,8.545098 c 1.120564,-0.9598489 1.821831,-1.7594436 2.808236,-3.2019919 0.439142,-0.6422143 0.623199,-0.7881622 0.986348,-0.7821267 0.312029,0.0052 0.553908,0.1211593 0.740077,0.3548457 0.149203,0.187284 0.360732,1.0157781 6.884038,26.9626259 4.230838,16.82842 6.748447,26.923178 6.779497,27.183489 0.118924,0.997028 0.01868,2.351858 -0.244398,3.302921 -0.409521,1.480509 -1.369801,3.030589 -2.476818,3.998072 -0.47453,0.414719 -1.233294,0.927084 -1.858851,1.255212 -0.449181,0.235613 -0.500618,0.2496 -7.82435,2.127723 -7.234988,1.855365 -7.381313,1.895076 -7.861982,2.133717 -1.338574,0.664569 -2.576219,1.644191 -3.393516,2.686042 -0.221997,0.282991 -0.792966,1.25082 -1.11428,1.888774 -0.422129,0.838117 -0.709439,1.048219 -1.287702,0.941664 z M 53.931285,30.956377 C 53.942236,30.921868 53.8699,30.550611 53.770557,30.131373 53.67121,29.712134 53.567139,29.234105 53.53929,29.069087 53.48671,28.757478 53.449251,28.57795 52.710784,25.097713 52.465068,23.939708 52.192171,22.652059 52.104343,22.236269 52.016517,21.82048 51.795591,20.788456 51.6134,19.942884 51.431208,19.097311 51.224417,18.125709 51.153862,17.783768 51.083313,17.441827 50.926796,16.713483 50.806055,16.165225 50.685316,15.616966 50.557734,15.009297 50.52254,14.814848 50.487342,14.620399 50.360183,14.012623 50.239956,13.464236 50.11973,12.915849 49.998377,12.332203 49.970283,12.167245 49.942187,12.002287 49.832569,11.466871 49.726678,10.977432 49.514104,9.9948692 49.362532,9.2597661 49.184932,8.3500332 L 49.067488,7.748443 48.308142,7.9077922 C 47.165673,8.1475386 46.997013,8.0809088 46.738705,7.2877818 46.664298,7.0593241 46.594462,6.8746597 46.583508,6.8774145 c -0.01095,0.00274 -0.406355,0.3747062 -0.878672,0.8265582 -0.472316,0.4518511 -0.952042,0.9085035 -1.066058,1.0147823 -0.114016,0.1062789 -0.35013,0.337566 -0.5247,0.513969 -0.17457,0.1764038 -0.793345,0.76853 -1.375058,1.315835 -0.581713,0.547306 -1.324059,1.258597 -1.649658,1.580647 -0.325598,0.322051 -0.971055,0.941646 -1.434348,1.376878 -0.463293,0.435234 -0.996428,0.943861 -1.184743,1.130285 -0.188315,0.186422 -0.35132,0.341197 -0.362234,0.343943 -0.01091,0.0027 -0.313597,0.29163 -0.672626,0.641967 -0.359029,0.350337 -0.859635,0.831986 -1.112456,1.070331 -0.252822,0.238345 -0.954359,0.908397 -1.558973,1.489001 -0.604614,0.580607 -1.419425,1.359884 -1.810693,1.73173 -0.391267,0.371844 -1.040391,0.995924 -1.442499,1.386842 -0.402109,0.390919 -1.371211,1.319833 -2.153561,2.064252 -0.782351,0.74442 -1.751463,1.673291 -2.153584,2.064159 -0.402121,0.390868 -1.21669,1.171109 -1.810154,1.733867 -0.593465,0.562759 -1.428896,1.361803 -1.856513,1.775653 -1.660444,1.606989 -4.748696,4.554135 -5.342651,5.098538 -0.343134,0.314509 -0.669774,0.618287 -0.725867,0.675062 -0.09822,0.09942 -0.0948,0.131825 0.09276,0.877512 0.18143,0.721316 0.201609,0.772558 0.294996,0.749069 0.05513,-0.01386 0.703566,-0.496846 1.440958,-1.073283 0.737392,-0.576439 1.348854,-1.050117 1.358803,-1.05262 0.03283,-0.0083 5.003443,-3.799313 6.536353,-4.985239 2.122953,-1.642408 2.495657,-1.90738 2.700467,-1.919882 0.141831,-0.0087 0.247672,0.03353 0.380192,0.151535 l 0.183645,0.163533 0.656054,2.608294 c 0.536314,2.132235 0.669014,2.605034 0.727056,2.590435 0.03905,-0.0098 0.744827,-0.535853 1.568389,-1.168957 0.823563,-0.633105 1.766386,-1.353383 2.095164,-1.60062 0.328779,-0.247237 0.972308,-0.740948 1.430067,-1.097137 0.45776,-0.356187 1.42422,-1.092126 2.14769,-1.635418 0.723469,-0.543292 1.422141,-1.072126 1.552604,-1.175187 0.130463,-0.103059 0.62357,-0.482631 1.095792,-0.843491 0.472223,-0.360861 0.944043,-0.723324 1.048488,-0.805474 0.466022,-0.366545 0.949774,-0.691813 1.076179,-0.723608 0.173671,-0.04369 0.486962,0.152038 0.589885,0.368514 0.04198,0.0883 0.363122,1.300752 0.713647,2.694341 l 0.637316,2.533797 1.821107,-0.458056 c 1.548475,-0.389482 1.848516,-0.451615 2.004189,-0.415028 0.328492,0.0772 0.387681,0.213815 0.796016,1.83724 0.333534,1.32604 0.378437,1.46811 0.46257,1.463551 0.238355,-0.01292 3.034151,-0.781524 3.052433,-0.839158 z" id="path1" /></g></svg>
+            <div class="w-10 h-10 flex-shrink-0 flex items-center justify-center text-gray-500">
+                 <!-- SVG DEL LOGO DEL HEADER - LÍNEA 159 -->
+                 <svg width="100%" height="100%" viewBox="0 0 79.375 79.375" version="1.1" xmlns="http://www.w3.org/2000/svg"><g id="layer1"><path style="fill:#8c8c8c;fill-opacity:1;stroke-width:0.845014" d="m 48.861837,77.39607 c -0.166327,-0.03065 -0.45581,-0.198706 -0.956381,-0.555222 -0.394821,-0.281197 -0.793857,-0.54503 -0.886746,-0.586295 -0.09289,-0.04126 -0.287464,-0.139474 -0.432385,-0.218244 -1.219871,-0.663039 -2.911845,-1.012771 -4.646357,-0.960404 -0.529571,0.01599 -0.658314,0.04608 -7.682768,1.795976 -7.923728,1.973912 -7.707566,1.929121 -8.909632,1.84623 -0.854966,-0.05895 -1.951438,-0.304261 -2.630921,-0.588595 -2.049684,-0.857703 -3.67708,-2.438225 -4.552633,-4.421497 -0.26187,-0.59318 -0.326171,-0.844678 -7.013314,-27.430917 L 4.4016809,19.444854 4.462104,19.176378 c 0.070088,-0.311421 0.2669046,-0.551707 0.555819,-0.67858 0.2731917,-0.119968 0.5899006,-0.04755 1.1448914,0.261789 1.3422438,0.748135 2.8747864,1.306415 4.4135636,1.607789 1.821828,0.35681 3.157855,0.42641 5.013165,0.261158 l 0.945564,-0.08422 8.065256,-1.998028 8.065256,-1.998026 -1.221421,1.172109 c -0.671781,0.64466 -1.304439,1.233852 -1.405905,1.309316 -0.166335,0.123708 -0.809286,0.292097 -6.535733,1.71171 -6.674008,1.654517 -6.685843,1.65708 -8.259461,1.788074 C 13.593007,22.666827 11.67815,22.518023 9.7909818,22.105788 9.1172922,21.958626 7.6702013,21.515114 7.0644037,21.270132 l -0.3007075,-0.121604 0.8654135,3.440908 c 0.4759774,1.8925 1.2816686,5.121143 1.790425,7.174761 0.6765573,2.730953 0.9411213,3.729799 0.9849873,3.71876 0.03299,-0.0083 0.244399,-0.185184 0.469806,-0.393076 0.225406,-0.207893 1.184844,-1.061137 2.132083,-1.896101 2.868326,-2.528343 2.841701,-2.508559 3.123916,-2.321385 0.264875,0.175672 0.309322,0.273963 0.556899,1.231522 0.151507,0.585993 0.26353,0.936338 0.296723,0.92799 0.02934,-0.0074 0.716465,-0.650107 1.526966,-1.428287 0.8105,-0.77818 1.78335,-1.709653 2.161885,-2.069939 0.378536,-0.360285 1.574598,-1.506008 2.657918,-2.546051 2.986123,-2.866834 6.1931,-5.939031 6.988405,-6.694704 0.391283,-0.371783 0.964736,-0.923221 1.274341,-1.225417 0.309606,-0.302195 0.835842,-0.804403 1.169415,-1.116019 0.333572,-0.311614 0.956088,-0.906272 1.383368,-1.321462 0.818741,-0.795573 1.196353,-1.15771 4.215062,-4.042327 1.03387,-0.987944 2.209098,-2.114758 2.61162,-2.50403 0.402522,-0.389273 1.021267,-0.9815198 1.37499,-1.3161069 C 42.701643,8.432978 43.402964,7.7620638 43.90641,7.2766444 44.409858,6.791225 44.996833,6.2252785 45.210801,6.0189869 45.42477,5.8126954 45.730805,5.5293072 45.890883,5.3892359 46.149141,5.1632531 46.180042,5.1123692 46.165158,4.9375758 46.074211,3.8694146 46.432809,2.8805806 47.148306,2.2265538 47.666452,1.7529234 47.966194,1.6390234 50.120371,1.097191 l 1.868017,-0.46985528 0.245819,0.13279268 0.245818,0.13279258 0.651425,2.52478452 c 0.44279,1.7161602 0.644177,2.5739764 0.628795,2.6783762 -0.02996,0.2032946 -0.351711,0.5432145 -0.564964,0.5968532 l -0.169847,0.042717 0.641983,1.0185263 c 0.353093,0.5601878 0.993053,1.5827759 1.422137,2.2724168 1.596816,2.566471 2.457373,3.935831 6.489482,10.326372 l 1.294062,2.050976 0.434257,-0.125691 0.434257,-0.12569 -1.799174,-7.210362 c -0.989547,-3.965699 -1.810179,-7.2075929 -1.82363,-7.2042092 -0.01345,0.0034 -0.198057,0.2108999 -0.410239,0.4611491 -0.786098,0.9271356 -1.836334,1.9078281 -2.670068,2.4932701 l -0.202212,0.141991 -0.09712,-0.158426 C 56.15286,9.719605 55.936185,9.339254 55.943432,9.2791467 55.948161,9.2398248 56.300121,8.9095 56.725538,8.545098 c 1.120564,-0.9598489 1.821831,-1.7594436 2.808236,-3.2019919 0.439142,-0.6422143 0.623199,-0.7881622 0.986348,-0.7821267 0.312029,0.0052 0.553908,0.1211593 0.740077,0.3548457 0.149203,0.187284 0.360732,1.0157781 6.884038,26.9626259 4.230838,16.82842 6.748447,26.923178 6.779497,27.183489 0.118924,0.997028 0.01868,2.351858 -0.244398,3.302921 -0.409521,1.480509 -1.369801,3.030589 -2.476818,3.998072 -0.47453,0.414719 -1.233294,0.927084 -1.858851,1.255212 -0.449181,0.235613 -0.500618,0.2496 -7.82435,2.127723 -7.234988,1.855365 -7.381313,1.895076 -7.861982,2.133717 -1.338574,0.664569 -2.576219,1.644191 -3.393516,2.686042 -0.221997,0.282991 -0.792966,1.25082 -1.11428,1.888774 -0.422129,0.838117 -0.709439,1.048219 -1.287702,0.941664 z M 55.515819,30.209023 C 54.511931,25.009207 49.551271,10.226556 49.067488,7.748443 L 48.308142,7.9077922 C 47.165673,8.1475386 46.997013,8.0809088 46.738705,7.2877818 46.664298,7.0593241 46.594462,6.8746597 46.583508,6.8774145 c -0.01095,0.00274 -0.406355,0.3747062 -0.878672,0.8265582 -0.472316,0.4518511 -0.952042,0.9085035 -1.066058,1.0147823 -0.114016,0.1062789 -0.35013,0.337566 -0.5247,0.513969 -0.17457,0.1764038 -0.793345,0.76853 -1.375058,1.315835 -0.581713,0.547306 -1.324059,1.258597 -1.649658,1.580647 -0.325598,0.322051 -0.971055,0.941646 -1.434348,1.376878 -0.463293,0.435234 -0.996428,0.943861 -1.184743,1.130285 -0.188315,0.186422 -0.35132,0.341197 -0.362234,0.343943 -0.01091,0.0027 -0.313597,0.29163 -0.672626,0.641967 -0.359029,0.350337 -0.859635,0.831986 -1.112456,1.070331 -0.252822,0.238345 -0.954359,0.908397 -1.558973,1.489001 -0.604614,0.580607 -1.419425,1.359884 -1.810693,1.73173 -0.391267,0.371844 -1.040391,0.995924 -1.442499,1.386842 -0.402109,0.390919 -1.371211,1.319833 -2.153561,2.064252 -0.782351,0.74442 -1.751463,1.673291 -2.153584,2.064159 -0.402121,0.390868 -1.21669,1.171109 -1.810154,1.733867 -0.593465,0.562759 -1.428896,1.361803 -1.856513,1.775653 -1.660444,1.606989 -4.748696,4.554135 -5.342651,5.098538 -0.343134,0.314509 -0.669774,0.618287 -0.725867,0.675062 -0.09822,0.09942 -0.0948,0.131825 0.09276,0.877512 0.18143,0.721316 0.201609,0.772558 0.294996,0.749069 0.05513,-0.01386 0.703566,-0.496846 1.440958,-1.073283 0.737392,-0.576439 1.348854,-1.050117 1.358803,-1.05262 0.03283,-0.0083 5.003443,-3.799313 6.536353,-4.985239 2.122953,-1.642408 2.495657,-1.90738 2.700467,-1.919882 0.141831,-0.0087 0.247672,0.03353 0.380192,0.151535 l 0.183645,0.163533 0.656054,2.608294 c 0.536314,2.132235 0.669014,2.605034 0.727056,2.590435 0.03905,-0.0098 0.744827,-0.535853 1.568389,-1.168957 0.823563,-0.633105 1.766386,-1.353383 2.095164,-1.60062 0.328779,-0.247237 0.972308,-0.740948 1.430067,-1.097137 0.45776,-0.356187 1.42422,-1.092126 2.14769,-1.635418 0.723469,-0.543292 1.422141,-1.072126 1.552604,-1.175187 0.130463,-0.103059 0.62357,-0.482631 1.095792,-0.843491 0.472223,-0.360861 0.944043,-0.723324 1.048488,-0.805474 0.466022,-0.366545 0.949774,-0.691813 1.076179,-0.723608 0.173671,-0.04369 0.486962,0.152038 0.589885,0.368514 0.04198,0.0883 0.363122,1.300752 0.713647,2.694341 l 0.637316,2.533797 1.821107,-0.458056 c 1.548475,-0.389482 1.848516,-0.451615 2.004189,-0.415028 0.328492,0.0772 0.387681,0.213815 0.796016,1.83724 0.333534,1.32604 0.378437,1.46811 0.46257,1.463551 0.988842,-0.361241 4.585708,-0.859638 4.636972,-1.586512 z M 37.238207,17.279187 c -0.0071,-0.02821 0.84349,-0.840265 1.936686,-1.848932 l 0.816036,-0.752939 4.48197,-1.127333 4.481968,-1.127334 0.09297,0.445773 c 0.05113,0.245175 0.128286,0.654409 0.171452,0.909406 l 0.07847,0.463636 -6.026884,1.53038 c -3.314786,0.84171 -6.029492,1.520014 -6.032679,1.507343 z m 23.537164,11.945981 c -0.0076,-0.03719 -0.313987,-1.249971 -0.680931,-2.695059 -0.715183,-2.816502 -0.72114,-2.853212 -0.512888,-3.160576 0.08241,-0.121625 0.182338,-0.161664 0.885369,-0.354743 0.435864,-0.119703 0.7908,-0.22432 0.788747,-0.232481 -0.002,-0.0082 -0.701229,-1.116373 -1.553726,-2.462693 C 57.803674,17.321742 55.371773,13.461468 54.014784,11.292115 53.456922,10.400286 52.827455,9.3942511 52.615971,9.0564809 52.182223,8.3637259 52.049609,8.2255233 52.19837,8.6212768 c 0.05371,0.1428781 0.193115,0.5812332 0.309798,0.974126 0.116684,0.3928929 0.27393,0.9163302 0.349436,1.1631942 0.0755,0.246864 0.265576,0.902792 0.422379,1.457618 0.156803,0.554826 0.359904,1.258658 0.451337,1.56407 0.09143,0.305412 0.291202,0.997285 0.443933,1.537497 0.318312,1.125869 0.590868,2.055659 0.791788,2.701089 0.07675,0.246551 0.261483,0.878232 0.410515,1.403735 0.149032,0.525503 0.327433,1.133185 0.396447,1.350405 0.06902,0.217219 0.254823,0.848629 0.412908,1.403132 0.158087,0.554504 0.332571,1.150375 0.387745,1.324161 0.05517,0.173786 0.217564,0.721519 0.360869,1.217186 0.143306,0.495667 0.298377,1.006855 0.344604,1.135974 0.04622,0.129121 0.244675,0.808532 0.440998,1.509803 0.196323,0.701271 0.378378,1.333624 0.404569,1.40523 0.02619,0.07161 0.106686,0.352046 0.17888,0.623201 l 0.131262,0.493008 1.176645,-0.295957 c 0.904029,-0.227386 1.173458,-0.311625 1.162888,-0.363581 z" id="path1" /></g></svg>
             </div>
             <div class="min-w-0 flex items-center gap-2">
                 <h1 class="text-sm md:text-lg font-black tracking-tight uppercase leading-tight truncate text-gray-900">ROL DE DESPACHADORES</h1>
@@ -88,7 +241,7 @@
         <button id="btnNewDispatcher" onclick="openAddModal()" class="bg-red-600 hover:bg-red-700 text-white p-2 md:px-4 md:py-2 rounded-lg transition-all shadow-md flex items-center gap-2 flex-shrink-0 border-b-2 border-red-800 active:translate-y-0.5"><i class="fa-solid fa-plus text-yellow-300"></i> <span class="hidden md:inline text-sm font-bold">Nuevo</span></button>
     </header>
 
-    <div id="tab-nav" class="bg-white border-b border-gray-300 shrink-0 shadow-sm">
+    <div id="tab-nav" class="bg-white border-b border-gray-300 shrink-0 shadow-sm" style="background-color: rgba(255, 255, 255, 0.7) !important;">
         <div class="flex">
             <button onclick="switchTab('despachadores')" id="tab-despachadores" class="flex-1 py-3 text-xs md:text-sm font-bold border-b-4 border-red-600 text-red-700 transition-colors uppercase tracking-wide text-center bg-gray-50"><i class="fa-solid fa-users md:mr-1"></i> <span class="block md:inline">Personal</span></button>
             <button onclick="switchTab('roles')" id="tab-roles" class="flex-1 py-3 text-xs md:text-sm font-bold border-b-4 border-transparent text-gray-400 hover:text-gray-600 transition-colors uppercase tracking-wide text-center"><i class="fa-solid fa-table-list md:mr-1"></i> <span class="block md:inline">Rol</span></button>
@@ -97,27 +250,30 @@
     </div>
 
     <!-- CAMBIO: Altura flexible con min-h-0 para permitir scroll interno sin desborde -->
-    <main class="flex-1 overflow-hidden relative bg-gray-100 flex flex-col min-h-0">
+    <main class="flex-1 overflow-hidden relative bg-gray-100 flex flex-col min-h-0" style="background-color: rgba(243, 244, 246, 0.2) !important; z-index: 1; position: relative;">
         <!-- Contenedor principal con scroll y padding -->
-        <div class="max-w-5xl mx-auto w-full h-full p-3 md:p-6 pb-20 overflow-y-auto scroll-smooth">
+        <div class="max-w-5xl mx-auto w-full h-full p-3 md:p-6 pb-4 overflow-y-auto scroll-smooth">
             <div id="view-despachadores" class="fade-in">
                 <div class="flex flex-col gap-3 mb-4">
                     <div class="flex justify-between items-end px-1"><p class="text-[10px] md:text-xs font-black text-gray-400 uppercase tracking-wider">DIRECTORIO ACTIVO</p><span id="counter" class="text-[10px] md:text-xs bg-red-100 border border-red-200 px-2 py-0.5 rounded-full text-red-800 font-bold shadow-sm">0</span></div>
-                    <div class="relative"><div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><i class="fa-solid fa-search text-gray-400"></i></div><input type="text" id="searchDispatcher" oninput="renderDispatchers()" class="block w-full pl-10 pr-3 py-3 border-2 border-gray-200 rounded-xl leading-5 bg-white placeholder-gray-400 focus:outline-none focus:border-red-500 focus:ring-0 sm:text-sm shadow-sm transition-all font-medium" placeholder="Buscar nombre o zona..."></div>
+                    <div class="relative"><div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><i class="fa-solid fa-search text-gray-400"></i></div><input type="text" id="searchDispatcher" oninput="renderDispatchers()" class="block w-full pl-10 pr-3 py-3 border-2 border-gray-200 rounded-xl leading-5 bg-white placeholder-gray-400 focus:outline-none focus:border-red-500 focus:ring-0 sm:text-sm shadow-sm transition-all font-medium" placeholder="Buscar nombre o zona..." style="background-color: rgba(255, 255, 255, 0.8) !important;"></div>
                 </div>
                 <div id="listaDespachadores" class="space-y-3"></div>
             </div>
 
             <!-- CAMBIO: Contenedor de roles con altura completa para llenar espacio -->
             <div id="view-roles" class="hidden fade-in flex flex-col h-full">
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col flex-1 h-full">
+                <div class="bg-white/70 rounded-xl shadow-sm border border-gray-200 overflow-hidden flex-1 flex flex-col h-full">
                     <div class="hidden md:grid grid-cols-12 bg-gray-800 border-b border-gray-200 text-xs font-bold text-white uppercase py-3 px-4 shrink-0">
-                        <div class="col-span-3">Fecha</div><div class="col-span-4">Despachador #1</div><div class="col-span-4">Despachador #2</div><div class="col-span-1 text-right no-print"></div> 
+                        <div class="col-span-3">Fecha</div>
+                        <div class="col-span-4 text-center">Despachador #1</div> <!-- Centrado -->
+                        <div class="col-span-4 text-center">Despachador #2</div> <!-- Centrado -->
+                        <div class="col-span-1 text-right no-print"></div> 
                     </div>
                     <div id="selection-bar" class="hidden bg-yellow-100 border-b border-yellow-300 p-2 flex justify-between items-center text-xs text-yellow-800 px-4 font-bold shadow-inner shrink-0"><span><i class="fa-solid fa-check-double mr-1"></i> Selección Múltiple Activa</span><button onclick="clearSelection()" class="underline hover:text-black">Cancelar</button></div>
                     
                     <!-- CAMBIO: Scroll solo en el cuerpo de la tabla -->
-                    <div id="roleTableBody" class="overflow-y-auto flex-1 md:divide-y md:divide-gray-100 bg-gray-50 md:bg-white p-1 md:p-0">
+                    <div id="roleTableBody" class="overflow-y-auto flex-1 bg-gray-50/70 md:bg-white/70 p-1 md:p-0">
                         <div class="p-8 text-center text-gray-400 mt-10"><i class="fa-solid fa-cloud-arrow-down text-3xl mb-2 animate-bounce"></i><p id="loading-text" class="text-xs">Sincronizando datos...</p></div>
                     </div>
                 </div>
@@ -125,16 +281,16 @@
 
             <div id="view-opciones" class="hidden fade-in">
                 <div class="max-w-md mx-auto space-y-4">
-                    <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
+                    <div class="bg-white/70 p-5 rounded-xl shadow-sm border border-gray-200">
                         <h3 class="font-bold text-black mb-4 flex items-center gap-2 text-sm uppercase"><i class="fa-solid fa-file-pdf text-red-600"></i> Reportes</h3>
                         <button onclick="askToPrint()" class="w-full py-4 bg-gray-900 text-white rounded-lg text-sm font-bold active:scale-[0.98] transition-transform flex items-center justify-center gap-2 shadow-md hover:bg-black border-b-4 border-gray-700"><i class="fa-solid fa-print text-yellow-400"></i> Imprimir / Guardar PDF</button>
                     </div>
-                    <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
+                    <div class="bg-white/70 p-5 rounded-xl shadow-sm border border-gray-200">
                         <h3 class="font-bold text-black mb-4 flex items-center gap-2 text-sm uppercase"><i class="fa-solid fa-file-import text-green-600"></i> Base de Datos</h3>
                         <p class="text-xs text-gray-500 mb-4">Carga masiva de personal.</p>
                         <button onclick="openImportModal()" class="w-full py-4 bg-green-600 text-white rounded-lg text-sm font-bold active:scale-[0.98] transition-transform flex items-center justify-center gap-2 shadow-md hover:bg-green-700 border-b-4 border-green-800"><i class="fa-solid fa-table"></i> Subir Lista (Excel/Sheets)</button>
                     </div>
-                    <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
+                    <div class="bg-white/70 p-5 rounded-xl shadow-sm border border-gray-200">
                         <h3 class="font-bold text-black mb-4 flex items-center gap-2 text-sm uppercase"><i class="fa-solid fa-calendar text-red-600"></i> Configuración Rol</h3>
                         <div class="mb-4"><label class="block text-[10px] font-bold text-gray-400 uppercase mb-2">Inicio del Rol (Lunes)</label><div class="flex gap-2"><input type="date" id="roleStartDate" onchange="saveStartDate(this.value)" disabled class="flex-1 px-3 py-3 bg-gray-50 border border-gray-200 rounded-lg text-sm font-medium text-black disabled:opacity-60"><button onclick="openPasswordModal()" id="btnUnlockDate" class="w-12 flex items-center justify-center bg-gray-100 text-gray-500 rounded-lg active:bg-gray-200 border border-gray-200"><i class="fa-solid fa-lock"></i></button></div></div>
                     </div>
@@ -143,21 +299,35 @@
         </div>
     </main>
 
+    <!-- Handle Click Outside Modals -->
+    <script>
+        function handleBodyClick(event) {
+            // Close dropdowns in lists
+            const dropdowns = document.querySelectorAll('.dropdown-menu');
+            dropdowns.forEach(dd => {
+                if (!dd.classList.contains('hidden') && !dd.parentElement.contains(event.target)) {
+                    dd.classList.add('hidden');
+                }
+            });
+            
+            // Close modals if clicked on backdrop (already handled by onclick on backdrop div, but good backup)
+        }
+    </script>
     <div id="modalBackdrop" onclick="closeAllModals()" class="fixed inset-0 modal-backdrop hidden z-40 transition-opacity cursor-pointer"></div>
 
     <!-- ELEMENTO OCULTO PARA GENERAR PDF E IMPRIMIR -->
     <div id="pdf-container" class="hidden">
         <div id="printable-content">
             <div class="pdf-header">
-                <h1 style="font-size: 20px; font-weight: 900; margin: 0; color: #000; text-transform: uppercase;">Rol de Despachadores</h1>
-                <p style="font-size: 11px; color: #666; margin-top: 3px;" id="pdf-date-range">Semana</p>
+                <h1 style="font-size: 24px; font-weight: 900; margin: 0; color: #000; text-transform: uppercase;">ROL DE DESPACHADORES</h1>
+                <p style="font-size: 13px; color: #666; margin: 0; font-weight: 600;" id="pdf-date-range">Semana</p>
             </div>
             <table class="pdf-table">
                 <thead>
                     <tr>
                         <th style="width: 25%;">Fecha</th>
-                        <th style="width: 37.5%;">Despachador #1</th>
-                        <th style="width: 37.5%;">Despachador #2</th>
+                        <th style="width: 37.5%; text-align: center;">Despachador #1</th>
+                        <th style="width: 37.5%; text-align: center;">Despachador #2</th>
                     </tr>
                 </thead>
                 <tbody id="pdf-table-body"></tbody>
@@ -181,7 +351,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-        import { getFirestore, collection, doc, onSnapshot, setDoc, updateDoc, deleteDoc, writeBatch } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+        import { getFirestore, collection, doc, onSnapshot, setDoc, updateDoc, deleteDoc, writeBatch, getDocs, query, where } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
 
         const manualConfig = {
@@ -259,8 +429,6 @@
             });
             const configRef = doc(db, COLLECTION_PREFIX + 'config', 'main');
             onSnapshot(configRef, (docSnap) => {
-                // If we want to allow configuration of base date. For now, anchor is static in logic below.
-                // But we can respect manual override.
                 if (docSnap.exists() && docSnap.data().startDate) {
                     window.roleStartDateString = docSnap.data().startDate;
                     document.getElementById('roleStartDate').value = window.roleStartDateString;
@@ -301,15 +469,32 @@
             const start = new Date(startStrRaw + 'T12:00:00');
             const end = new Date(endStrRaw + 'T12:00:00');
             
-            const options = { year: '2-digit', month: 'long', day: 'numeric' };
-            const startStr = start.toLocaleDateString('es-ES', options);
-            const endStr = end.toLocaleDateString('es-ES', options);
+            // Formato: "DDDD, DD MMM YY"
+            const weekdays = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+            const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
             
-            document.getElementById('pdf-date-range').innerText = `Del ${startStr} - ${endStr}`;
+            const startDay = weekdays[start.getDay()];
+            const startDate = String(start.getDate()).padStart(2, '0');
+            const startMonth = months[start.getMonth()];
+            const startYear = String(start.getFullYear()).slice(-2);
+            const startStr = `${startDay}, ${startDate} ${startMonth} ${startYear}`;
+            
+            const endDay = weekdays[end.getDay()];
+            const endDate = String(end.getDate()).padStart(2, '0');
+            const endMonth = months[end.getMonth()];
+            const endYear = String(end.getFullYear()).slice(-2);
+            const endStr = `${endDay}, ${endDate} ${endMonth} ${endYear}`;
+            
+            document.getElementById('pdf-date-range').innerText = `${startStr} - ${endStr}`;
 
-            window.currentRoleDates.forEach(dateStr => {
+            window.currentRoleDates.forEach((dateStr, index) => {
                 const dateObj = new Date(dateStr + 'T12:00:00');
-                const dateFmt = new Intl.DateTimeFormat('es-ES', { weekday: 'long', day: 'numeric', month: 'long' }).format(dateObj).toUpperCase();
+                // Formato: "DDDD, DD MMM YY"
+                const dayName = weekdays[dateObj.getDay()];
+                const day = String(dateObj.getDate()).padStart(2, '0');
+                const month = months[dateObj.getMonth()];
+                const year = String(dateObj.getFullYear()).slice(-2);
+                const dateFmt = `${dayName}, ${day} ${month} ${year}`;
                 
                 const roleData = window.roles[dateStr] || {};
                 const d1Id = roleData[0];
@@ -319,14 +504,19 @@
                 const d1 = d1Id ? window.dispatchers.find(d => d.id === d1Id) : null;
                 const d2 = d2Id ? window.dispatchers.find(d => d.id === d2Id) : null;
 
-                const t1 = d1 ? `<b>${d1.name} ${d1.lastname}</b> <br><small style="color:#666">(${d1.area})</small>` : '<span class="pdf-vacante">Vacante</span>';
-                const t2 = d2 ? `<b>${d2.name} ${d2.lastname}</b> <br><small style="color:#666">(${d2.area})</small>` : '<span class="pdf-vacante">Vacante</span>';
+                // Formato: "NOMBRE APELLIDO (ZONA)" en una sola fila
+                const t1 = d1 ? `${d1.name} ${d1.lastname} (${d1.area})` : '<span class="pdf-vacante">Vacante</span>';
+                const t2 = d2 ? `${d2.name} ${d2.lastname} (${d2.area})` : '<span class="pdf-vacante">Vacante</span>';
+
+                // Zebra Striping Logic for PDF e Impresión (blanco y gris)
+                const rowClass = index % 2 === 0 ? 'pdf-row-even' : 'pdf-row-odd';
+                const bgColor = index % 2 === 0 ? '#e5e7eb' : '#ffffff'; // Gris claro y blanco
 
                 tbody.innerHTML += `
-                    <tr>
-                        <td style="font-weight: bold; background-color: #f9f9f9;">${dateFmt}</td>
-                        <td>${t1}</td>
-                        <td>${t2}</td>
+                    <tr class="${rowClass}" style="background-color: ${bgColor};">
+                        <td style="font-weight: bold; text-align: center; font-size: 15px;">${dateFmt}</td>
+                        <td class="pdf-col-d1" style="text-align: center; font-size: 15px; font-weight: 600;">${t1}</td>
+                        <td class="pdf-col-d2" style="text-align: center; font-size: 15px; font-weight: 600;">${t2}</td>
                     </tr>
                 `;
             });
@@ -336,14 +526,25 @@
         window.generatePDF = () => {
             closePrintAskModal();
             preparePrintContent();
+            
+            // Filename format: ROL DE DESPACHADORES DDMMMYY HH:MM HRS.pdf
+            const now = new Date();
+            const day = String(now.getDate()).padStart(2, '0');
+            const months = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
+            const month = months[now.getMonth()];
+            const year = String(now.getFullYear()).slice(-2);
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const filename = `ROL DE DESPACHADORES ${day}${month}${year} ${hours}:${minutes} HRS.pdf`;
 
             const element = document.getElementById('printable-content');
             const opt = {
-                margin:       0.2, // Márgenes muy pequeños para que quepa todo
-                filename:     `rol_despachadores_${window.currentRoleDates[0]}.pdf`,
+                // NOTA: Para cambiar los márgenes laterales del PDF, modifica el segundo valor del array [top/bottom, left/right]
+                margin:       [0.3, 0.1], // Márgenes: [top/bottom, left/right] - Aumenta el segundo valor para márgenes laterales más grandes
+                filename:     filename,
                 image:        { type: 'jpeg', quality: 0.98 },
                 html2canvas:  { scale: 2, useCORS: true },
-                jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' } // Formato CARTA
+                jsPDF:        { unit: 'in', format: 'letter', orientation: 'landscape' } // Formato CARTA HORIZONTAL
             };
 
             html2pdf().set(opt).from(element).save();
@@ -353,8 +554,18 @@
             if (mode === 'print') {
                 closePrintAskModal();
                 preparePrintContent();
+                // Mostrar el contenedor PDF antes de imprimir (igual que el PDF)
+                document.getElementById('pdf-container').classList.remove('hidden');
+                // Asegurar que el contenido sea visible para impresión
+                document.getElementById('printable-content').style.display = 'block';
                 // Delay slightly to ensure DOM update
-                setTimeout(() => window.print(), 300);
+                setTimeout(() => {
+                    window.print();
+                    // Ocultar después de imprimir
+                    setTimeout(() => {
+                        document.getElementById('pdf-container').classList.add('hidden');
+                    }, 500);
+                }, 300);
             } else {
                 // PDF fallback if needed, but generatePDF is called directly above
             }
@@ -467,13 +678,36 @@
             await updateDoc(doc(db, COLLECTION_PREFIX + 'dispatchers', editingId), updateData);
             closeEditModal();
         }
+        
         window.confirmDisable = async function() {
             const date = document.getElementById('modalDisableDate').value;
             const r = document.getElementById('modalDisableReason').value;
             if(!date || !r) return showAlert("Faltan datos");
+            
+            // 1. Update dispatcher status
             await updateDoc(doc(db, COLLECTION_PREFIX + 'dispatchers', editingId), { active: false, disabledUntil: date, reason: r });
+            
+            // 2. Remove from roles (The clean up requested)
+            // Query roles collection where any field value == editingId?
+            // Since structure is dynamic keys (0, 1), simple query is hard.
+            // We iterate loaded roles in window.roles as a best effort for current view,
+            // but ideally we should query DB. Given structure {0: 'id', 1: 'id'},
+            // we can query where '0' == id OR '1' == id.
+            
+            const q0 = query(collection(db, COLLECTION_PREFIX + 'roles'), where("0", "==", editingId));
+            const q1 = query(collection(db, COLLECTION_PREFIX + 'roles'), where("1", "==", editingId));
+            
+            const [snap0, snap1] = await Promise.all([getDocs(q0), getDocs(q1)]);
+            
+            const batch = writeBatch(db);
+            snap0.forEach(doc => { batch.update(doc.ref, { "0": null }); });
+            snap1.forEach(doc => { batch.update(doc.ref, { "1": null }); });
+            
+            await batch.commit();
+
             closeDisableModal();
         }
+        
         window.confirmReenable = async function() { await updateDoc(doc(db, COLLECTION_PREFIX + 'dispatchers', viewingId), { active: true, disabledUntil: null, reason: '' }); closeInfoModal(); }
         window.assignDispatcher = async function(id) {
             const roleRef = doc(db, COLLECTION_PREFIX + 'roles', selectedDate);
@@ -591,22 +825,24 @@
 
             if(filtered.length===0) { c.innerHTML='<div class="text-center py-10 opacity-50 text-xs text-gray-400 font-bold uppercase">Sin resultados</div>'; return; }
             
-            filtered.forEach(d => {
+            filtered.forEach((d, index) => {
                 const el = document.createElement('div');
-                const base = "relative bg-white p-3 rounded-xl border-b-2 border-gray-100 shadow-sm transition-all flex items-center justify-between";
+                const base = "relative p-3 rounded-xl border-b-2 border-gray-100 shadow-sm transition-all flex items-center justify-between";
+                // Zebra striping for list
+                const zebraClass = index % 2 === 0 ? 'bg-gray-50' : 'bg-white';
+                
                 const st = d.active ? "border-gray-100" : "border-red-100 bg-red-50";
                 const btnColor = d.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
                 const btnText = d.active ? 'ACTIVO' : 'BAJA';
                 const statusBtn = `<button onclick="handleStatus(event, '${d.id}')" class="px-3 py-1.5 ${btnColor} text-[10px] font-black rounded-lg tracking-wider border-b-2 border-green-200">${btnText}</button>`;
                 const iconBg = d.active ? 'bg-gray-100 text-gray-500' : 'bg-red-200 text-red-600';
                 if(!d.active) { el.onclick = (e) => { if(!e.target.closest('button')) showInfoModal(d.id); }; }
-                el.className = `${base} ${st}`;
+                el.className = `${base} ${st} ${zebraClass}`;
                 el.innerHTML = `
                     <div class="flex items-center gap-3 overflow-hidden">
                         <div class="w-10 h-10 ${iconBg} rounded-full flex-shrink-0 flex items-center justify-center text-sm font-bold border border-gray-100"><i class="fa-solid fa-user"></i></div>
                         <div class="min-w-0">
-                            <h4 class="${d.active?'text-gray-800':'text-red-800'} font-black text-sm truncate leading-tight">${d.name} ${d.lastname}</h4>
-                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wide truncate">${d.area}</p>
+                            <h4 class="${d.active?'text-gray-800':'text-red-800'} font-black text-sm truncate leading-tight">${d.name} ${d.lastname} (${d.area})</h4>
                         </div>
                     </div>
                     <div class="flex items-center gap-2 flex-shrink-0">${statusBtn}<div class="relative"><button onclick="toggleMenu(event, 'menu-${d.id}')" class="w-8 h-8 rounded-full bg-gray-50 text-gray-400 active:bg-gray-200 flex items-center justify-center"><i class="fa-solid fa-ellipsis-vertical"></i></button><div id="menu-${d.id}" class="dropdown-menu hidden absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-2xl border border-gray-100 z-10 overflow-hidden"><button onclick="openEditModal('${d.id}')" class="w-full text-left px-4 py-3 text-sm text-gray-700 active:bg-gray-50 flex items-center gap-3 border-b border-gray-50 font-bold"><i class="fa-solid fa-pen text-blue-600"></i> Editar</button><button onclick="deleteDispatcher('${d.id}')" class="w-full text-left px-4 py-3 text-sm text-red-600 active:bg-red-50 flex items-center gap-3 font-bold"><i class="fa-solid fa-trash"></i> Eliminar</button></div></div></div>`;
@@ -615,34 +851,11 @@
         }
 
         window.recalcDates = () => {
-            // AUTO DATE UPDATE LOGIC
-            const anchorDate = new Date('2026-01-05T12:00:00'); // Fixed Anchor
-            const now = new Date();
-            // Normalize time
-            now.setHours(12,0,0,0);
-            
-            // Calc difference in milliseconds
-            const diffTime = now - anchorDate;
-            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-            
-            // Calculate how many 14-day cycles have passed
-            let cycles = Math.floor(diffDays / 14);
-            
-            // FIX: If we are before the anchor date (e.g. today Jan 2, start Jan 5),
-            // diffDays will be negative (-3). cycles will be -1.
-            // We want to show the upcoming cycle (cycle 0) instead of the past one.
-            if (cycles < 0) cycles = 0;
-            
-            // Calculate new start date based on cycles
-            const daysToAdd = cycles * 14;
-            const newStartDate = new Date(anchorDate);
-            newStartDate.setDate(anchorDate.getDate() + daysToAdd);
-            
+            // Updated Logic: Simply use window.roleStartDateString as the anchor
+            const startDate = new Date(window.roleStartDateString + 'T12:00:00');
             window.currentRoleDates = [];
-            let processDate = new Date(newStartDate);
+            let processDate = new Date(startDate);
             let daysAdded = 0;
-            
-            // Generate 12 working days (skip Sundays)
             while(daysAdded < 12) {
                 if(processDate.getDay() !== 0) { 
                     window.currentRoleDates.push(processDate.toISOString().split('T')[0]); 
@@ -658,14 +871,17 @@
             
             const selBar = document.getElementById('selection-bar');
             if(window.selectedSlots.length > 0) { selBar.classList.remove('hidden'); selBar.classList.add('flex'); } else { selBar.classList.add('hidden'); selBar.classList.remove('flex'); }
-            window.currentRoleDates.forEach(dateStr => {
+            window.currentRoleDates.forEach((dateStr, index) => {
                 const dateObj = new Date(dateStr + 'T12:00:00');
                 const dateFmt = new Intl.DateTimeFormat('es-ES', { weekday: 'long', day: 'numeric', month: 'short' }).format(dateObj).toUpperCase().replace('.', '');
                 const roleData = window.roles[dateStr] || {};
                 const d1Id = roleData[0]; const d2Id = roleData[1];
                 const row = document.createElement('div');
-                row.className = "flex flex-col md:grid md:grid-cols-12 md:items-stretch mb-2 md:mb-0 bg-white md:bg-transparent shadow-sm md:shadow-none rounded-xl md:rounded-none overflow-hidden border border-gray-200 md:border-0 md:border-b md:border-gray-200";
-                row.innerHTML = `<div class="p-2 md:p-3 bg-gray-100 md:bg-white md:col-span-3 flex items-center justify-between md:justify-start border-b md:border-b-0 border-gray-200"><span class="text-xs font-black text-gray-500">${dateFmt}</span></div><div class="grid grid-cols-2 md:contents"><div class="p-2 border-r border-gray-100 md:border-gray-200 relative group md:col-span-4" ondragover="allowDrop(event)" ondrop="drop(event, '${dateStr}', 0)">${renderSlotContent(dateStr, 0, d1Id)}</div><div class="p-2 relative group md:col-span-4" ondragover="allowDrop(event)" ondrop="drop(event, '${dateStr}', 1)">${renderSlotContent(dateStr, 1, d2Id)}</div></div><div class="hidden md:block md:col-span-1"></div>`;
+                // Zebra striping for screen
+                const zebraClass = index % 2 === 0 ? 'bg-gray-50' : 'bg-white';
+                
+                row.className = `flex flex-col md:grid md:grid-cols-12 md:items-stretch mb-2 md:mb-0 ${zebraClass} md:bg-transparent shadow-sm md:shadow-none rounded-xl md:rounded-none overflow-hidden border border-gray-200 md:border-0 md:border-b md:border-gray-200 zebra-row`;
+                row.innerHTML = `<div class="p-2 md:p-3 bg-gray-100 md:bg-transparent md:col-span-3 flex items-center justify-between md:justify-start border-b md:border-b-0 border-gray-200"><span class="text-xs font-black text-gray-500">${dateFmt}</span></div><div class="grid grid-cols-2 md:contents"><div class="p-2 border-r border-gray-100 md:border-gray-200 relative group md:col-span-4" ondragover="allowDrop(event)" ondrop="drop(event, '${dateStr}', 0)">${renderSlotContent(dateStr, 0, d1Id)}</div><div class="p-2 relative group md:col-span-4" ondragover="allowDrop(event)" ondrop="drop(event, '${dateStr}', 1)">${renderSlotContent(dateStr, 1, d2Id)}</div></div><div class="hidden md:block md:col-span-1"></div>`;
                 c.appendChild(row);
             });
         }
@@ -680,7 +896,8 @@
             
             const isSel = window.selectedSlots.some(s => s.date === date && s.slot === slot);
             const cl = isSel ? 'card-selected' : 'border-gray-200 bg-white';
-            return `<div class="w-full h-full p-1 md:p-2 rounded-lg border ${cl} flex flex-col justify-center relative cursor-grab active:cursor-grabbing shadow-sm" draggable="true" ondragstart="drag(event, '${date}', ${slot}, '${dispatcherId}')"><p class="text-xs font-black text-gray-800 truncate leading-tight">${disp.name}</p><p class="text-xs text-gray-500 truncate leading-tight mb-1 font-medium">${disp.lastname}</p><p class="text-[9px] font-black text-gray-300 uppercase tracking-wide">(${disp.area})</p><button onclick="openRoleOptions('${date}', ${slot})" class="absolute top-1 right-1 w-8 h-8 flex items-center justify-center text-gray-300 active:text-gray-600 rounded-full active:bg-gray-100"><i class="fa-solid fa-ellipsis-vertical text-sm"></i></button></div>`;
+            // Formato: "NOMBRE APELLIDO (ZONA)" en una sola fila, centrado
+            return `<div class="w-full h-full p-1 md:p-2 rounded-lg border ${cl} flex flex-col justify-center items-center relative cursor-grab active:cursor-grabbing shadow-sm" draggable="true" ondragstart="drag(event, '${date}', ${slot}, '${dispatcherId}')"><p class="text-xs font-black text-gray-800 truncate leading-tight text-center">${disp.name} ${disp.lastname} (${disp.area})</p><button onclick="openRoleOptions('${date}', ${slot})" class="absolute top-1 left-1 w-8 h-8 flex items-center justify-center text-gray-300 active:text-gray-600 rounded-full active:bg-gray-100"><i class="fa-solid fa-ellipsis-vertical text-sm"></i></button></div>`;
         }
         function getWeekIndex(dateStr) { const idx = window.currentRoleDates.indexOf(dateStr); return idx === -1 ? -1 : (idx < 6 ? 0 : 1); }
         function checkRules(tDate, tSlot, dId, xDate=null, xSlot=null) {
@@ -736,7 +953,7 @@
                 const b = document.createElement('button');
                 b.className = "w-full text-left p-4 bg-white border border-gray-100 shadow-sm rounded-xl flex justify-between items-center active:bg-blue-50 active:border-blue-200 mb-2";
                 b.onclick = () => assignDispatcher(dp.id);
-                b.innerHTML = `<div><span class="font-black text-sm text-gray-800">${dp.name} ${dp.lastname}</span><span class="text-[10px] font-bold text-gray-400 uppercase ml-2 bg-gray-100 px-2 py-0.5 rounded-full">${dp.area}</span></div>`;
+                b.innerHTML = `<div><span class="font-black text-sm text-gray-800">${dp.name} ${dp.lastname} (${dp.area})</span></div>`;
                 c.appendChild(b);
             });
         }
@@ -822,6 +1039,154 @@
         window.showInfoModal = (id) => { viewingId=id; const d=window.dispatchers.find(x=>x.id===id); document.getElementById('infoName').innerText=`${d.name} ${d.lastname}`; document.getElementById('infoReason').innerText=d.reason; document.getElementById('infoDays').innerText=new Date(d.disabledUntil+'T12:00:00').toLocaleDateString(); openM('modalInfo'); }
         window.closeInfoModal = () => closeM('modalInfo');
         if(!app) { renderDispatchers(); renderRoleTable(); }
+
+        // SVG DEL LOGO DE FONDO - LÍNEA 971 - TAMAÑO COMPLETO DE LA PÁGINA
+        // Configuración copiada de V07.HTML y adaptada para cubrir toda la página
+        (function() {
+            console.log('🔍 Iniciando creación del logo de fondo...');
+            const bgLogo = document.getElementById('bg-logo');
+            if (!bgLogo) {
+                console.error('❌ ERROR: No se encontró el elemento #bg-logo');
+                return;
+            }
+            console.log('✅ Elemento #bg-logo encontrado:', bgLogo);
+            
+            // Limpiar contenido previo
+            bgLogo.innerHTML = '';
+            
+            const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            // Usar viewport completo
+            const vw = window.innerWidth;
+            const vh = window.innerHeight;
+            svg.setAttribute('width', vw);
+            svg.setAttribute('height', vh);
+            svg.setAttribute('viewBox', '0 0 79.375 79.375');
+            svg.setAttribute('preserveAspectRatio', 'xMidYMid slice'); // slice para cubrir toda la página
+            svg.style.width = '100vw';
+            svg.style.height = '100vh';
+            svg.style.minWidth = '100vw';
+            svg.style.minHeight = '100vh';
+            svg.style.display = 'block';
+            svg.style.visibility = 'visible';
+            svg.style.position = 'absolute';
+            svg.style.top = '0';
+            svg.style.left = '0';
+            svg.style.overflow = 'visible';
+            
+            const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            g.setAttribute('id', 'logo-layer');
+            
+            const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            path.setAttribute('d', 'm 48.861837,77.39607 c -0.166327,-0.03065 -0.45581,-0.198706 -0.956381,-0.555222 -0.394821,-0.281197 -0.793857,-0.54503 -0.886746,-0.586295 -0.09289,-0.04126 -0.287464,-0.139474 -0.432385,-0.218244 -1.219871,-0.663039 -2.911845,-1.012771 -4.646357,-0.960404 -0.529571,0.01599 -0.658314,0.04608 -7.682768,1.795976 -7.923728,1.973912 -7.707566,1.929121 -8.909632,1.84623 -0.854966,-0.05895 -1.951438,-0.304261 -2.630921,-0.588595 -2.049684,-0.857703 -3.67708,-2.438225 -4.552633,-4.421497 -0.26187,-0.59318 -0.326171,-0.844678 -7.013314,-27.430917 L 4.4016809,19.444854 4.462104,19.176378 c 0.070088,-0.311421 0.2669046,-0.551707 0.555819,-0.67858 0.2731917,-0.119968 0.5899006,-0.04755 1.1448914,0.261789 1.3422438,0.748135 2.8747864,1.306415 4.4135636,1.607789 1.821828,0.35681 3.157855,0.42641 5.013165,0.261158 l 0.945564,-0.08422 8.065256,-1.998028 8.065256,-1.998026 -1.221421,1.172109 c -0.671781,0.64466 -1.304439,1.233852 -1.405905,1.309316 -0.166335,0.123708 -0.809286,0.292097 -6.535733,1.71171 -6.674008,1.654517 -6.685843,1.65708 -8.259461,1.788074 C 13.593007,22.666827 11.67815,22.518023 9.7909818,22.105788 9.1172922,21.958626 7.6702013,21.515114 7.0644037,21.270132 l -0.3007075,-0.121604 0.8654135,3.440908 c 0.4759774,1.8925 1.2816686,5.121143 1.790425,7.174761 0.6765573,2.730953 0.9411213,3.729799 0.9849873,3.71876 0.03299,-0.0083 0.244399,-0.185184 0.469806,-0.393076 0.225406,-0.207893 1.184844,-1.061137 2.132083,-1.896101 2.868326,-2.528343 2.841701,-2.508559 3.123916,-2.321385 0.264875,0.175672 0.309322,0.273963 0.556899,1.231522 0.151507,0.585993 0.26353,0.936338 0.296723,0.92799 0.02934,-0.0074 0.716465,-0.650107 1.526966,-1.428287 0.8105,-0.77818 1.78335,-1.709653 2.161885,-2.069939 0.378536,-0.360285 1.574598,-1.506008 2.657918,-2.546051 2.986123,-2.866834 6.1931,-5.939031 6.988405,-6.694704 0.391283,-0.371783 0.964736,-0.923221 1.274341,-1.225417 0.309606,-0.302195 0.835842,-0.804403 1.169415,-1.116019 0.333572,-0.311614 0.956088,-0.906272 1.383368,-1.321462 0.818741,-0.795573 1.196353,-1.15771 4.215062,-4.042327 1.03387,-0.987944 2.209098,-2.114758 2.61162,-2.50403 0.402522,-0.389273 1.021267,-0.9815198 1.37499,-1.3161069 C 42.701643,8.432978 43.402964,7.7620638 43.90641,7.2766444 44.409858,6.791225 44.996833,6.2252785 45.210801,6.0189869 45.42477,5.8126954 45.730805,5.5293072 45.890883,5.3892359 46.149141,5.1632531 46.180042,5.1123692 46.165158,4.9375758 46.074211,3.8694146 46.432809,2.8805806 47.148306,2.2265538 47.666452,1.7529234 47.966194,1.6390234 50.120371,1.097191 l 1.868017,-0.46985528 0.245819,0.13279268 0.245818,0.13279258 0.651425,2.52478452 c 0.44279,1.7161602 0.644177,2.5739764 0.628795,2.6783762 -0.02996,0.2032946 -0.351711,0.5432145 -0.564964,0.5968532 l -0.169847,0.042717 0.641983,1.0185263 c 0.353093,0.5601878 0.993053,1.5827759 1.422137,2.2724168 1.596816,2.566471 2.457373,3.935831 6.489482,10.326372 l 1.294062,2.050976 0.434257,-0.125691 0.434257,-0.12569 -1.799174,-7.210362 c -0.989547,-3.965699 -1.810179,-7.2075929 -1.82363,-7.2042092 -0.01345,0.0034 -0.198057,0.2108999 -0.410239,0.4611491 -0.786098,0.9271356 -1.836334,1.9078281 -2.670068,2.4932701 l -0.202212,0.141991 -0.09712,-0.158426 C 56.15286,9.719605 55.936185,9.339254 55.943432,9.2791467 55.948161,9.2398248 56.300121,8.9095 56.725538,8.545098 c 1.120564,-0.9598489 1.821831,-1.7594436 2.808236,-3.2019919 0.439142,-0.6422143 0.623199,-0.7881622 0.986348,-0.7821267 0.312029,0.0052 0.553908,0.1211593 0.740077,0.3548457 0.149203,0.187284 0.360732,1.0157781 6.884038,26.9626259 4.230838,16.82842 6.748447,26.923178 6.779497,27.183489 0.118924,0.997028 0.01868,2.351858 -0.244398,3.302921 -0.409521,1.480509 -1.369801,3.030589 -2.476818,3.998072 -0.47453,0.414719 -1.233294,0.927084 -1.858851,1.255212 -0.449181,0.235613 -0.500618,0.2496 -7.82435,2.127723 -7.234988,1.855365 -7.381313,1.895076 -7.861982,2.133717 -1.338574,0.664569 -2.576219,1.644191 -3.393516,2.686042 -0.221997,0.282991 -0.792966,1.25082 -1.11428,1.888774 -0.422129,0.838117 -0.709439,1.048219 -1.287702,0.941664 z M 55.515819,30.209023 C 54.511931,25.009207 49.551271,10.226556 49.067488,7.748443 L 48.308142,7.9077922 C 47.165673,8.1475386 46.997013,8.0809088 46.738705,7.2877818 46.664298,7.0593241 46.594462,6.8746597 46.583508,6.8774145 c -0.01095,0.00274 -0.406355,0.3747062 -0.878672,0.8265582 -0.472316,0.4518511 -0.952042,0.9085035 -1.066058,1.0147823 -0.114016,0.1062789 -0.35013,0.337566 -0.5247,0.513969 -0.17457,0.1764038 -0.793345,0.76853 -1.375058,1.315835 -0.581713,0.547306 -1.324059,1.258597 -1.649658,1.580647 -0.325598,0.322051 -0.971055,0.941646 -1.434348,1.376878 -0.463293,0.435234 -0.996428,0.943861 -1.184743,1.130285 -0.188315,0.186422 -0.35132,0.341197 -0.362234,0.343943 -0.01091,0.0027 -0.313597,0.29163 -0.672626,0.641967 -0.359029,0.350337 -0.859635,0.831986 -1.112456,1.070331 -0.252822,0.238345 -0.954359,0.908397 -1.558973,1.489001 -0.604614,0.580607 -1.419425,1.359884 -1.810693,1.73173 -0.391267,0.371844 -1.040391,0.995924 -1.442499,1.386842 -0.402109,0.390919 -1.371211,1.319833 -2.153561,2.064252 -0.782351,0.74442 -1.751463,1.673291 -2.153584,2.064159 -0.402121,0.390868 -1.21669,1.171109 -1.810154,1.733867 -0.593465,0.562759 -1.428896,1.361803 -1.856513,1.775653 -1.660444,1.606989 -4.748696,4.554135 -5.342651,5.098538 -0.343134,0.314509 -0.669774,0.618287 -0.725867,0.675062 -0.09822,0.09942 -0.0948,0.131825 0.09276,0.877512 0.18143,0.721316 0.201609,0.772558 0.294996,0.749069 0.05513,-0.01386 0.703566,-0.496846 1.440958,-1.073283 0.737392,-0.576439 1.348854,-1.050117 1.358803,-1.05262 0.03283,-0.0083 5.003443,-3.799313 6.536353,-4.985239 2.122953,-1.642408 2.495657,-1.90738 2.700467,-1.919882 0.141831,-0.0087 0.247672,0.03353 0.380192,0.151535 l 0.183645,0.163533 0.656054,2.608294 c 0.536314,2.132235 0.669014,2.605034 0.727056,2.590435 0.03905,-0.0098 0.744827,-0.535853 1.568389,-1.168957 0.823563,-0.633105 1.766386,-1.353383 2.095164,-1.60062 0.328779,-0.247237 0.972308,-0.740948 1.430067,-1.097137 0.45776,-0.356187 1.42422,-1.092126 2.14769,-1.635418 0.723469,-0.543292 1.422141,-1.072126 1.552604,-1.175187 0.130463,-0.103059 0.62357,-0.482631 1.095792,-0.843491 0.472223,-0.360861 0.944043,-0.723324 1.048488,-0.805474 0.466022,-0.366545 0.949774,-0.691813 1.076179,-0.723608 0.173671,-0.04369 0.486962,0.152038 0.589885,0.368514 0.04198,0.0883 0.363122,1.300752 0.713647,2.694341 l 0.637316,2.533797 1.821107,-0.458056 c 1.548475,-0.389482 1.848516,-0.451615 2.004189,-0.415028 0.328492,0.0772 0.387681,0.213815 0.796016,1.83724 0.333534,1.32604 0.378437,1.46811 0.46257,1.463551 0.988842,-0.361241 4.585708,-0.859638 4.636972,-1.586512 z M 37.238207,17.279187 c -0.0071,-0.02821 0.84349,-0.840265 1.936686,-1.848932 l 0.816036,-0.752939 4.48197,-1.127333 4.481968,-1.127334 0.09297,0.445773 c 0.05113,0.245175 0.128286,0.654409 0.171452,0.909406 l 0.07847,0.463636 -6.026884,1.53038 c -3.314786,0.84171 -6.029492,1.520014 -6.032679,1.507343 z m 23.537164,11.945981 c -0.0076,-0.03719 -0.313987,-1.249971 -0.680931,-2.695059 -0.715183,-2.816502 -0.72114,-2.853212 -0.512888,-3.160576 0.08241,-0.121625 0.182338,-0.161664 0.885369,-0.354743 0.435864,-0.119703 0.7908,-0.22432 0.788747,-0.232481 -0.002,-0.0082 -0.701229,-1.116373 -1.553726,-2.462693 C 57.803674,17.321742 55.371773,13.461468 54.014784,11.292115 53.456922,10.400286 52.827455,9.3942511 52.615971,9.0564809 52.182223,8.3637259 52.049609,8.2255233 52.19837,8.6212768 c 0.05371,0.1428781 0.193115,0.5812332 0.309798,0.974126 0.116684,0.3928929 0.27393,0.9163302 0.349436,1.1631942 0.0755,0.246864 0.265576,0.902792 0.422379,1.457618 0.156803,0.554826 0.359904,1.258658 0.451337,1.56407 0.09143,0.305412 0.291202,0.997285 0.443933,1.537497 0.318312,1.125869 0.590868,2.055659 0.791788,2.701089 0.07675,0.246551 0.261483,0.878232 0.410515,1.403735 0.149032,0.525503 0.327433,1.133185 0.396447,1.350405 0.06902,0.217219 0.254823,0.848629 0.412908,1.403132 0.158087,0.554504 0.332571,1.150375 0.387745,1.324161 0.05517,0.173786 0.217564,0.721519 0.360869,1.217186 0.143306,0.495667 0.298377,1.006855 0.344604,1.135974 0.04622,0.129121 0.244675,0.808532 0.440998,1.509803 0.196323,0.701271 0.378378,1.333624 0.404569,1.40523 0.02619,0.07161 0.106686,0.352046 0.17888,0.623201 l 0.131262,0.493008 1.176645,-0.295957 c 0.904029,-0.227386 1.173458,-0.311625 1.162888,-0.363581 z');
+            path.setAttribute('fill', '#8c8c8c');
+            path.setAttribute('fill-opacity', '1');
+            path.setAttribute('style', 'fill: #8c8c8c !important; fill-opacity: 1 !important;');
+            
+            g.appendChild(path);
+            svg.appendChild(g);
+            bgLogo.appendChild(svg);
+            
+            // Forzar estilos directamente en el elemento
+            bgLogo.style.cssText = `
+                position: fixed !important;
+                top: 0 !important;
+                left: 0 !important;
+                width: 100vw !important;
+                height: 100vh !important;
+                min-width: 100vw !important;
+                min-height: 100vh !important;
+                z-index: 0 !important;
+                opacity: 0.6 !important;
+                display: block !important;
+                visibility: visible !important;
+                background: transparent !important;
+                pointer-events: none !important;
+                overflow: visible !important;
+            `;
+            
+            // Verificar que se creó correctamente
+            const svgElement = bgLogo.querySelector('svg');
+            const pathElement = bgLogo.querySelector('path');
+            
+            console.log('✅ SVG creado:', svgElement ? 'SÍ' : 'NO');
+            console.log('✅ Path creado:', pathElement ? 'SÍ' : 'NO');
+            console.log('📐 Tamaño bg-logo:', bgLogo.offsetWidth, 'x', bgLogo.offsetHeight);
+            console.log('📐 Tamaño SVG:', svgElement ? svgElement.offsetWidth + 'x' + svgElement.offsetHeight : 'N/A');
+            console.log('🎨 Opacidad:', window.getComputedStyle(bgLogo).opacity);
+            console.log('📍 Z-index:', window.getComputedStyle(bgLogo).zIndex);
+            console.log('👁️ Display:', window.getComputedStyle(bgLogo).display);
+            console.log('👁️ Visibility:', window.getComputedStyle(bgLogo).visibility);
+            console.log('🎨 Color del path:', pathElement ? window.getComputedStyle(pathElement).fill : 'N/A');
+            
+            // Verificar que el SVG tenga tamaño
+            setTimeout(() => {
+                const computedSvg = window.getComputedStyle(svg);
+                console.log('📐 SVG computed width:', computedSvg.width);
+                console.log('📐 SVG computed height:', computedSvg.height);
+                console.log('📐 SVG offsetWidth:', svg.offsetWidth);
+                console.log('📐 SVG offsetHeight:', svg.offsetHeight);
+            }, 100);
+            
+            if (svgElement && pathElement) {
+                console.log('✅✅✅ LOGO DE FONDO CREADO EXITOSAMENTE ✅✅✅');
+                console.log('💡 Si no ves el logo, ejecuta: document.getElementById("bg-logo").style.opacity = "1";');
+                
+                // Ajustar tamaño cuando cambie la ventana
+                window.addEventListener('resize', () => {
+                    const vw = window.innerWidth;
+                    const vh = window.innerHeight;
+                    svg.setAttribute('width', vw);
+                    svg.setAttribute('height', vh);
+                    svg.style.width = vw + 'px';
+                    svg.style.height = vh + 'px';
+                });
+            } else {
+                console.error('❌❌❌ ERROR: El SVG o el path no se crearon correctamente ❌❌❌');
+            }
+            
+            // Función de depuración global para verificar el logo
+            window.debugLogo = function() {
+                const logo = document.getElementById('bg-logo');
+                if (!logo) {
+                    console.error('❌ No se encontró #bg-logo');
+                    return;
+                }
+                const svg = logo.querySelector('svg');
+                const path = logo.querySelector('path');
+                const styles = window.getComputedStyle(logo);
+                
+                console.log('=== DEBUG LOGO DE FONDO ===');
+                console.log('Elemento existe:', logo ? 'SÍ' : 'NO');
+                console.log('SVG existe:', svg ? 'SÍ' : 'NO');
+                console.log('Path existe:', path ? 'SÍ' : 'NO');
+                console.log('Tamaño:', logo.offsetWidth, 'x', logo.offsetHeight);
+                console.log('Posición:', logo.offsetTop, ',', logo.offsetLeft);
+                console.log('Z-index:', styles.zIndex);
+                console.log('Opacidad:', styles.opacity);
+                console.log('Display:', styles.display);
+                console.log('Visibility:', styles.visibility);
+                console.log('Background:', styles.background);
+                console.log('=======================');
+                
+                // Intentar hacer el logo más visible temporalmente
+                logo.style.opacity = '1';
+                logo.style.zIndex = '9999';
+                console.log('⚠️ Logo hecho temporalmente 100% visible. Recarga la página para restaurar.');
+            };
+            
+            console.log('💡 TIP: Ejecuta debugLogo() en la consola para verificar el estado del logo');
+            
+            // Función para hacer el logo temporalmente más visible (para debugging)
+            window.showLogo = function() {
+                const logo = document.getElementById('bg-logo');
+                if (logo) {
+                    logo.style.opacity = '1';
+                    logo.style.zIndex = '9999';
+                    console.log('⚠️ Logo hecho 100% visible temporalmente. Recarga para restaurar.');
+                }
+            };
+            console.log('💡 TIP: Ejecuta showLogo() para hacer el logo 100% visible temporalmente');
+        })();
     </script>
 </body>
 </html>
