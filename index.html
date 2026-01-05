@@ -426,6 +426,7 @@
                 window.roles = {};
                 snapshot.forEach(doc => window.roles[doc.id] = doc.data());
                 renderRoleTable();
+                renderDispatchers(); // Actualizar estrellas cuando cambien los roles
             });
             const configRef = doc(db, COLLECTION_PREFIX + 'config', 'main');
             onSnapshot(configRef, (docSnap) => {
@@ -811,6 +812,18 @@
         window.openAddModal = () => { document.getElementById('addNombre').value=''; document.getElementById('addApellido').value=''; document.getElementById('addArea').value=''; openM('modalAdd'); }
         window.closeAddModal = () => closeM('modalAdd');
 
+        // --- FUNCIÓN PARA CONTAR USO EN ROLES ---
+        window.getDispatcherUsageCount = (dispatcherId) => {
+            if (!window.roles || !dispatcherId) return 0;
+            let count = 0;
+            Object.keys(window.roles).forEach(dateStr => {
+                const roleData = window.roles[dateStr] || {};
+                if (roleData[0] === dispatcherId) count++;
+                if (roleData[1] === dispatcherId) count++;
+            });
+            return count;
+        }
+
         // --- RENDER (MODIFICADO CON BÚSQUEDA) ---
         window.renderDispatchers = () => {
             const query = document.getElementById('searchDispatcher')?.value.toLowerCase() || '';
@@ -836,16 +849,27 @@
                 const btnText = d.active ? 'ACTIVO' : 'BAJA';
                 const statusBtn = `<button onclick="handleStatus(event, '${d.id}')" class="px-3 py-1.5 ${btnColor} text-[10px] font-black rounded-lg tracking-wider border-b-2 border-green-200">${btnText}</button>`;
                 const iconBg = d.active ? 'bg-gray-100 text-gray-500' : 'bg-red-200 text-red-600';
+                
+                // Contar uso en roles y generar estrellas
+                const usageCount = window.getDispatcherUsageCount(d.id);
+                let starsHtml = '';
+                if (usageCount === 1) {
+                    starsHtml = '<span class="text-yellow-500 ml-1"><i class="fa-solid fa-star text-xs"></i></span>';
+                } else if (usageCount === 2) {
+                    starsHtml = '<span class="text-yellow-500 ml-1"><i class="fa-solid fa-star text-xs"></i><i class="fa-solid fa-star text-xs ml-0.5"></i></span>';
+                }
+                
                 if(!d.active) { el.onclick = (e) => { if(!e.target.closest('button')) showInfoModal(d.id); }; }
                 el.className = `${base} ${st} ${zebraClass}`;
                 el.innerHTML = `
                     <div class="flex items-center gap-3 overflow-hidden">
                         <div class="w-10 h-10 ${iconBg} rounded-full flex-shrink-0 flex items-center justify-center text-sm font-bold border border-gray-100"><i class="fa-solid fa-user"></i></div>
                         <div class="min-w-0">
-                                                        <h4 class="${d.active?'text-gray-800':'text-red-800'} font-black text-sm leading-tight">
+                            <h4 class="${d.active?'text-gray-800':'text-red-800'} font-black text-sm leading-tight flex items-center flex-wrap">
                                 <span class="block md:inline">${d.name}</span>
                                 <span class="block md:inline md:ml-1">${d.lastname}</span>
                                 <span class="block md:inline md:ml-1">(${d.area})</span>
+                                ${starsHtml}
                             </h4>
                         </div>
                     </div>
